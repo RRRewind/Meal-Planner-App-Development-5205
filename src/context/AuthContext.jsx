@@ -56,6 +56,12 @@ export const AuthProvider = ({ children }) => {
           if (event === 'SIGNED_IN' && session?.user) {
             await handleUserSignIn(session.user)
           }
+
+          // Handle sign out
+          if (event === 'SIGNED_OUT') {
+            console.log('User signed out, clearing local data')
+            clearLocalData()
+          }
         }
       }
     )
@@ -65,6 +71,37 @@ export const AuthProvider = ({ children }) => {
       subscription.unsubscribe()
     }
   }, [])
+
+  const clearLocalData = () => {
+    try {
+      // Clear all meal planner related localStorage data
+      const keysToRemove = [
+        'mealPlannerRecipes',
+        'mealPlannerMealPlans',
+        'supabase.auth.token',
+        'sb-labsvtcxahdfzeqmnnyz-auth-token'
+      ]
+      
+      keysToRemove.forEach(key => {
+        try {
+          localStorage.removeItem(key)
+        } catch (e) {
+          console.warn(`Error removing ${key} from localStorage:`, e)
+        }
+      })
+
+      // Clear sessionStorage as well
+      try {
+        sessionStorage.clear()
+      } catch (e) {
+        console.warn('Error clearing sessionStorage:', e)
+      }
+
+      console.log('✅ Local data cleared successfully')
+    } catch (error) {
+      console.error('Error clearing local data:', error)
+    }
+  }
 
   const handleUserSignIn = async (user) => {
     try {
@@ -119,13 +156,13 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
-
+      
       return { success: true, data }
     } catch (error) {
       console.error('Google sign in error:', error)
       return { 
         success: false, 
-        error: error.message || 'Google authentication is not properly configured. Please use email authentication.'
+        error: error.message || 'Google authentication is not properly configured. Please use email authentication.' 
       }
     }
   }
@@ -138,7 +175,7 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
-
+      
       return { success: true, data }
     } catch (error) {
       console.error('Email sign in error:', error)
@@ -159,7 +196,7 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
-
+      
       return { success: true, data }
     } catch (error) {
       console.error('Email sign up error:', error)
@@ -169,20 +206,44 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     try {
+      console.log('🔄 Starting sign out process...')
+      
+      // Clear local data first
+      clearLocalData()
+      
+      // Sign out from Supabase
       const { error } = await supabase.auth.signOut()
-      if (error) throw error
-
-      // Clear local storage
-      try {
-        localStorage.removeItem('mealPlannerRecipes')
-        localStorage.removeItem('mealPlannerMealPlans')
-      } catch (e) {
-        console.warn('Error clearing localStorage:', e)
+      
+      if (error) {
+        console.error('Supabase sign out error:', error)
+        throw error
       }
 
+      // Force clear the state immediately
+      setUser(null)
+      setSession(null)
+      
+      console.log('✅ Sign out successful')
+      
+      // Force a page reload to ensure clean state
+      setTimeout(() => {
+        window.location.href = '/landing'
+      }, 100)
+      
       return { success: true }
     } catch (error) {
       console.error('Sign out error:', error)
+      
+      // Even if there's an error, try to clear local state
+      setUser(null)
+      setSession(null)
+      clearLocalData()
+      
+      // Still redirect to landing page
+      setTimeout(() => {
+        window.location.href = '/landing'
+      }, 100)
+      
       return { success: false, error: error.message }
     }
   }
@@ -199,7 +260,7 @@ export const AuthProvider = ({ children }) => {
         .eq('id', user.id)
 
       if (error) throw error
-
+      
       return { success: true }
     } catch (error) {
       console.error('Profile update error:', error)

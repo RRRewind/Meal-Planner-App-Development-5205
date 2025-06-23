@@ -8,16 +8,34 @@ const { FiUser, FiSettings, FiLogOut, FiChevronDown } = FiIcons
 
 const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const [isSigningOut, setIsSigningOut] = useState(false)
   const { user, signOut } = useAuth()
 
   const handleSignOut = async () => {
-    await signOut()
+    if (isSigningOut) return // Prevent multiple clicks
+    
+    setIsSigningOut(true)
     setIsOpen(false)
+    
+    try {
+      console.log('🔄 User menu: Starting sign out...')
+      const result = await signOut()
+      
+      if (result.success) {
+        console.log('✅ User menu: Sign out successful')
+      } else {
+        console.error('❌ User menu: Sign out failed:', result.error)
+      }
+    } catch (error) {
+      console.error('❌ User menu: Sign out error:', error)
+    } finally {
+      setIsSigningOut(false)
+    }
   }
 
   if (!user) return null
 
-  const userInitials = user.user_metadata?.full_name 
+  const userInitials = user.user_metadata?.full_name
     ? user.user_metadata.full_name.split(' ').map(n => n[0]).join('').toUpperCase()
     : user.email.charAt(0).toUpperCase()
 
@@ -29,7 +47,10 @@ const UserMenu = () => {
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center space-x-2 bg-white rounded-xl px-3 py-2 shadow-md border border-orange-100 hover:bg-orange-50 transition-colors"
+        disabled={isSigningOut}
+        className={`flex items-center space-x-2 bg-white rounded-xl px-3 py-2 shadow-md border border-orange-100 hover:bg-orange-50 transition-colors ${
+          isSigningOut ? 'opacity-50 cursor-not-allowed' : ''
+        }`}
       >
         {user.user_metadata?.avatar_url ? (
           <img
@@ -45,18 +66,23 @@ const UserMenu = () => {
         <span className="hidden sm:block font-medium text-gray-700 max-w-20 truncate">
           {displayName}
         </span>
-        <SafeIcon icon={FiChevronDown} className="w-4 h-4 text-gray-500" />
+        <SafeIcon 
+          icon={FiChevronDown} 
+          className={`w-4 h-4 text-gray-500 transition-transform ${
+            isOpen ? 'rotate-180' : ''
+          }`} 
+        />
       </motion.button>
 
       <AnimatePresence>
         {isOpen && (
           <>
             {/* Backdrop */}
-            <div
-              className="fixed inset-0 z-10"
-              onClick={() => setIsOpen(false)}
+            <div 
+              className="fixed inset-0 z-10" 
+              onClick={() => setIsOpen(false)} 
             />
-            
+
             {/* Menu */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: -10 }}
@@ -96,7 +122,8 @@ const UserMenu = () => {
                     setIsOpen(false)
                     // TODO: Open profile modal
                   }}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                  disabled={isSigningOut}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   <SafeIcon icon={FiUser} className="w-5 h-5 text-gray-500" />
                   <span className="text-gray-700">Profile Settings</span>
@@ -107,7 +134,8 @@ const UserMenu = () => {
                     setIsOpen(false)
                     // TODO: Open preferences modal
                   }}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
+                  disabled={isSigningOut}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors disabled:opacity-50"
                 >
                   <SafeIcon icon={FiSettings} className="w-5 h-5 text-gray-500" />
                   <span className="text-gray-700">Preferences</span>
@@ -117,10 +145,16 @@ const UserMenu = () => {
 
                 <button
                   onClick={handleSignOut}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-red-50 transition-colors text-red-600"
+                  disabled={isSigningOut}
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-red-50 transition-colors text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <SafeIcon icon={FiLogOut} className="w-5 h-5" />
-                  <span>Sign Out</span>
+                  <SafeIcon 
+                    icon={FiLogOut} 
+                    className={`w-5 h-5 ${isSigningOut ? 'animate-spin' : ''}`} 
+                  />
+                  <span>
+                    {isSigningOut ? 'Signing out...' : 'Sign Out'}
+                  </span>
                 </button>
               </div>
             </motion.div>

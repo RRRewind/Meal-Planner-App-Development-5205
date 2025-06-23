@@ -49,50 +49,62 @@ const AppRoutes = () => {
         <AnimatePresence mode="wait">
           <Routes>
             <Route path="/landing" element={<Navigate to="/" replace />} />
-            <Route path="/" element={
-              <motion.div
-                key="dashboard"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Dashboard />
-              </motion.div>
-            } />
-            <Route path="/recipes" element={
-              <motion.div
-                key="recipes"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Recipes />
-              </motion.div>
-            } />
-            <Route path="/calendar" element={
-              <motion.div
-                key="calendar"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <Calendar />
-              </motion.div>
-            } />
-            <Route path="/shopping" element={
-              <motion.div
-                key="shopping"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ShoppingList />
-              </motion.div>
-            } />
+            <Route 
+              path="/" 
+              element={
+                <motion.div
+                  key="dashboard"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Dashboard />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/recipes" 
+              element={
+                <motion.div
+                  key="recipes"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Recipes />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/calendar" 
+              element={
+                <motion.div
+                  key="calendar"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Calendar />
+                </motion.div>
+              } 
+            />
+            <Route 
+              path="/shopping" 
+              element={
+                <motion.div
+                  key="shopping"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ShoppingList />
+                </motion.div>
+              } 
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AnimatePresence>
