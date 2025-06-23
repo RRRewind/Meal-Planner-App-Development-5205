@@ -26,10 +26,14 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
     setLoading(true)
     setError('')
     
-    const result = await signInWithGoogle()
-    
-    if (!result.success) {
-      setError(result.error)
+    try {
+      const result = await signInWithGoogle()
+      if (!result.success) {
+        setError(result.error || 'Google sign-in failed')
+      }
+    } catch (err) {
+      setError('Google sign-in is not available. Please use email authentication.')
+      console.error('Google auth error:', err)
     }
     
     setLoading(false)
@@ -48,7 +52,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
         setLoading(false)
         return
       }
-
+      
       if (formData.password.length < 6) {
         setError('Password must be at least 6 characters')
         setLoading(false)
@@ -70,7 +74,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
     } else {
       // Sign in
       const result = await signInWithEmail(formData.email, formData.password)
-
+      
       if (result.success) {
         onClose()
       } else {
@@ -82,7 +86,10 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
   }
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }))
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }))
     setError('')
     setSuccess('')
   }
@@ -146,7 +153,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
 
         {/* Content */}
         <div className="p-6">
-          {/* Google Sign In */}
+          {/* Google Sign In - Only show if properly configured */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}

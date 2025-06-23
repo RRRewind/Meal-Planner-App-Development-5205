@@ -21,12 +21,37 @@ export const MealPlanProvider = ({ children }) => {
   const [currentWeek, setCurrentWeek] = useState(startOfWeek(new Date(), { weekStartsOn: 1 }));
   const [loading, setLoading] = useState(false);
 
+  // Safe localStorage operations
+  const safeLocalStorage = {
+    getItem: (key) => {
+      try {
+        return localStorage.getItem(key);
+      } catch (e) {
+        console.warn('LocalStorage getItem error:', e);
+        return null;
+      }
+    },
+    setItem: (key, value) => {
+      try {
+        localStorage.setItem(key, value);
+      } catch (e) {
+        console.warn('LocalStorage setItem error:', e);
+      }
+    },
+    removeItem: (key) => {
+      try {
+        localStorage.removeItem(key);
+      } catch (e) {
+        console.warn('LocalStorage removeItem error:', e);
+      }
+    }
+  };
+
   // Load data when user changes
   useEffect(() => {
     if (user) {
       loadUserData();
     } else {
-      // Load from localStorage for guests
       loadLocalData();
     }
   }, [user]);
@@ -34,41 +59,63 @@ export const MealPlanProvider = ({ children }) => {
   const loadUserData = async () => {
     setLoading(true);
     try {
-      // Load recipes from Supabase
+      // Load recipes
       const { data: recipesData, error: recipesError } = await supabase
         .from('recipes_mp2025')
         .select('*')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
-      if (recipesError) throw recipesError;
+      if (recipesError && recipesError.code !== 'PGRST116') {
+        console.error('Error loading recipes:', recipesError);
+        throw recipesError;
+      }
 
-      // Load meal plans from Supabase
+      // Load meal plans
       const { data: mealPlansData, error: mealPlansError } = await supabase
         .from('meal_plans_mp2025')
         .select('*')
         .eq('user_id', user.id);
 
-      if (mealPlansError) throw mealPlansError;
+      if (mealPlansError && mealPlansError.code !== 'PGRST116') {
+        console.error('Error loading meal plans:', mealPlansError);
+        throw mealPlansError;
+      }
 
       // Transform meal plans data
       const mealPlansMap = {};
-      mealPlansData?.forEach(plan => {
-        if (!mealPlansMap[plan.date]) {
-          mealPlansMap[plan.date] = {};
-        }
-        if (plan.meal_type === 'snacks') {
-          if (!mealPlansMap[plan.date][plan.meal_type]) {
-            mealPlansMap[plan.date][plan.meal_type] = [];
+      if (Array.isArray(mealPlansData)) {
+        mealPlansData.forEach(plan => {
+          if (plan && plan.date && plan.meal_type) {
+            if (!mealPlansMap[plan.date]) {
+              mealPlansMap[plan.date] = {};
+            }
+            if (plan.meal_type === 'snacks') {
+              if (!mealPlansMap[plan.date][plan.meal_type]) {
+                mealPlansMap[plan.date][plan.meal_type] = [];
+              }
+              if (plan.recipe_data) {
+                mealPlansMap[plan.date][plan.meal_type].push(plan.recipe_data);
+              }
+            } else {
+              mealPlansMap[plan.date][plan.meal_type] = plan.recipe_data;
+            }
           }
-          mealPlansMap[plan.date][plan.meal_type].push(plan.recipe_data);
-        } else {
-          mealPlansMap[plan.date][plan.meal_type] = plan.recipe_data;
-        }
-      });
+        });
+      }
 
-      setRecipes(recipesData || []);
+      // Transform recipes data
+      const formattedRecipes = Array.isArray(recipesData) ? recipesData.map(recipe => ({
+        ...recipe,
+        prepTime: recipe.prep_time || recipe.prepTime || 0,
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : []
+      })) : [];
+
+      setRecipes(formattedRecipes);
       setMealPlans(mealPlansMap);
+      
+      console.log('✅ User data loaded successfully');
     } catch (error) {
       console.error('Error loading user data:', error);
       // Fallback to localStorage
@@ -78,35 +125,57 @@ export const MealPlanProvider = ({ children }) => {
   };
 
   const loadLocalData = () => {
-    const savedRecipes = localStorage.getItem('mealPlannerRecipes');
-    const savedMealPlans = localStorage.getItem('mealPlannerMealPlans');
+    try {
+      const savedRecipes = safeLocalStorage.getItem('mealPlannerRecipes');
+      const savedMealPlans = safeLocalStorage.getItem('mealPlannerMealPlans');
 
-    if (savedRecipes) {
-      setRecipes(JSON.parse(savedRecipes));
-    }
-    if (savedMealPlans) {
-      setMealPlans(JSON.parse(savedMealPlans));
+      if (savedRecipes) {
+        const parsedRecipes = JSON.parse(savedRecipes);
+        setRecipes(Array.isArray(parsedRecipes) ? parsedRecipes : []);
+      } else {
+        setRecipes([]);
+      }
+
+      if (savedMealPlans) {
+        const parsedMealPlans = JSON.parse(savedMealPlans);
+        setMealPlans(typeof parsedMealPlans === 'object' && parsedMealPlans !== null ? parsedMealPlans : {});
+      } else {
+        setMealPlans({});
+      }
+
+      console.log('📱 Local data loaded');
+    } catch (error) {
+      console.error('Error loading local data:', error);
+      setRecipes([]);
+      setMealPlans({});
     }
   };
 
   // Save to localStorage for guests
   useEffect(() => {
-    if (!user) {
-      localStorage.setItem('mealPlannerRecipes', JSON.stringify(recipes));
+    if (!user && recipes.length > 0) {
+      safeLocalStorage.setItem('mealPlannerRecipes', JSON.stringify(recipes));
     }
   }, [recipes, user]);
 
   useEffect(() => {
-    if (!user) {
-      localStorage.setItem('mealPlannerMealPlans', JSON.stringify(mealPlans));
+    if (!user && Object.keys(mealPlans).length > 0) {
+      safeLocalStorage.setItem('mealPlannerMealPlans', JSON.stringify(mealPlans));
     }
   }, [mealPlans, user]);
 
   const addRecipe = async (recipe) => {
+    if (!recipe || !recipe.title) {
+      console.error('Invalid recipe data');
+      return null;
+    }
+
     const newRecipe = {
       ...recipe,
       id: uuidv4(),
-      created_at: new Date().toISOString()
+      created_at: new Date().toISOString(),
+      ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+      instructions: Array.isArray(recipe.instructions) ? recipe.instructions : []
     };
 
     if (user) {
@@ -116,11 +185,11 @@ export const MealPlanProvider = ({ children }) => {
           .insert([{
             id: newRecipe.id,
             user_id: user.id,
-            title: newRecipe.title,
-            description: newRecipe.description,
-            category: newRecipe.category,
-            prep_time: newRecipe.prepTime,
-            servings: newRecipe.servings,
+            title: newRecipe.title || '',
+            description: newRecipe.description || '',
+            category: newRecipe.category || 'Other',
+            prep_time: Number(newRecipe.prepTime) || 0,
+            servings: Number(newRecipe.servings) || 1,
             ingredients: newRecipe.ingredients,
             instructions: newRecipe.instructions,
             created_at: newRecipe.created_at
@@ -149,18 +218,23 @@ export const MealPlanProvider = ({ children }) => {
   };
 
   const updateRecipe = async (id, updatedRecipe) => {
+    if (!id || !updatedRecipe) {
+      console.error('Invalid update data');
+      return;
+    }
+
     if (user) {
       try {
         const { error } = await supabase
           .from('recipes_mp2025')
           .update({
-            title: updatedRecipe.title,
-            description: updatedRecipe.description,
-            category: updatedRecipe.category,
-            prep_time: updatedRecipe.prepTime,
-            servings: updatedRecipe.servings,
-            ingredients: updatedRecipe.ingredients,
-            instructions: updatedRecipe.instructions
+            title: updatedRecipe.title || '',
+            description: updatedRecipe.description || '',
+            category: updatedRecipe.category || 'Other',
+            prep_time: Number(updatedRecipe.prepTime) || 0,
+            servings: Number(updatedRecipe.servings) || 1,
+            ingredients: Array.isArray(updatedRecipe.ingredients) ? updatedRecipe.ingredients : [],
+            instructions: Array.isArray(updatedRecipe.instructions) ? updatedRecipe.instructions : []
           })
           .eq('id', id)
           .eq('user_id', user.id);
@@ -177,6 +251,11 @@ export const MealPlanProvider = ({ children }) => {
   };
 
   const deleteRecipe = async (id) => {
+    if (!id) {
+      console.error('Invalid recipe ID');
+      return;
+    }
+
     if (user) {
       try {
         const { error } = await supabase
@@ -204,12 +283,12 @@ export const MealPlanProvider = ({ children }) => {
     const updatedMealPlans = { ...mealPlans };
     Object.keys(updatedMealPlans).forEach(date => {
       ['breakfast', 'lunch', 'dinner', 'snacks'].forEach(mealType => {
-        if (updatedMealPlans[date][mealType]) {
-          if (mealType === 'snacks') {
+        if (updatedMealPlans[date] && updatedMealPlans[date][mealType]) {
+          if (mealType === 'snacks' && Array.isArray(updatedMealPlans[date][mealType])) {
             updatedMealPlans[date][mealType] = updatedMealPlans[date][mealType].filter(
-              snack => snack.id !== id
+              snack => snack && snack.id !== id
             );
-          } else if (updatedMealPlans[date][mealType].id === id) {
+          } else if (updatedMealPlans[date][mealType] && updatedMealPlans[date][mealType].id === id) {
             updatedMealPlans[date][mealType] = null;
           }
         }
@@ -219,6 +298,11 @@ export const MealPlanProvider = ({ children }) => {
   };
 
   const addMealToPlan = async (date, mealType, recipe) => {
+    if (!date || !mealType || !recipe) {
+      console.error('Invalid meal plan data');
+      return;
+    }
+
     const dateKey = format(date, 'yyyy-MM-dd');
 
     if (user) {
@@ -249,6 +333,11 @@ export const MealPlanProvider = ({ children }) => {
   };
 
   const removeMealFromPlan = async (date, mealType, recipeId = null) => {
+    if (!date || !mealType) {
+      console.error('Invalid meal plan removal data');
+      return;
+    }
+
     const dateKey = format(date, 'yyyy-MM-dd');
 
     if (user) {
@@ -273,10 +362,12 @@ export const MealPlanProvider = ({ children }) => {
     setMealPlans(prev => {
       const updated = { ...prev };
       if (mealType === 'snacks' && recipeId) {
-        updated[dateKey] = {
-          ...updated[dateKey],
-          snacks: updated[dateKey]?.snacks?.filter(snack => snack.id !== recipeId) || []
-        };
+        if (updated[dateKey] && Array.isArray(updated[dateKey].snacks)) {
+          updated[dateKey] = {
+            ...updated[dateKey],
+            snacks: updated[dateKey].snacks.filter(snack => snack && snack.id !== recipeId)
+          };
+        }
       } else {
         updated[dateKey] = {
           ...updated[dateKey],
@@ -297,27 +388,35 @@ export const MealPlanProvider = ({ children }) => {
     const upcomingMeals = [];
 
     Object.entries(mealPlans).forEach(([dateKey, meals]) => {
-      const mealDate = new Date(dateKey);
-      if (isAfter(mealDate, today) || isSameDay(mealDate, today)) {
-        ['breakfast', 'lunch', 'dinner', 'snacks'].forEach(mealType => {
-          if (meals[mealType]) {
-            if (mealType === 'snacks') {
-              meals[mealType].forEach(snack => {
+      if (!meals || typeof meals !== 'object') return;
+      
+      try {
+        const mealDate = new Date(dateKey);
+        if (isAfter(mealDate, today) || isSameDay(mealDate, today)) {
+          ['breakfast', 'lunch', 'dinner', 'snacks'].forEach(mealType => {
+            if (meals[mealType]) {
+              if (mealType === 'snacks' && Array.isArray(meals[mealType])) {
+                meals[mealType].forEach(snack => {
+                  if (snack && snack.title) {
+                    upcomingMeals.push({
+                      date: mealDate,
+                      mealType,
+                      recipe: snack
+                    });
+                  }
+                });
+              } else if (meals[mealType] && meals[mealType].title) {
                 upcomingMeals.push({
                   date: mealDate,
                   mealType,
-                  recipe: snack
+                  recipe: meals[mealType]
                 });
-              });
-            } else {
-              upcomingMeals.push({
-                date: mealDate,
-                mealType,
-                recipe: meals[mealType]
-              });
+              }
             }
-          }
-        });
+          });
+        }
+      } catch (e) {
+        console.warn('Error processing meal date:', dateKey, e);
       }
     });
 
@@ -329,27 +428,34 @@ export const MealPlanProvider = ({ children }) => {
     const upcomingMeals = getUpcomingMeals();
 
     upcomingMeals.forEach(({ recipe }) => {
-      recipe.ingredients.forEach(ingredient => {
-        const key = ingredient.name.toLowerCase();
-        if (ingredientMap.has(key)) {
-          const existing = ingredientMap.get(key);
-          ingredientMap.set(key, {
-            ...existing,
-            quantity: existing.quantity + ingredient.quantity,
-            recipes: [...existing.recipes, recipe.title]
-          });
-        } else {
-          ingredientMap.set(key, {
-            ...ingredient,
-            recipes: [recipe.title]
-          });
-        }
-      });
+      if (recipe && Array.isArray(recipe.ingredients)) {
+        recipe.ingredients.forEach(ingredient => {
+          if (ingredient && ingredient.name && typeof ingredient.name === 'string') {
+            const key = ingredient.name.toLowerCase().trim();
+            if (key && key.length > 0) {
+              if (ingredientMap.has(key)) {
+                const existing = ingredientMap.get(key);
+                ingredientMap.set(key, {
+                  ...existing,
+                  quantity: (existing.quantity || 0) + (Number(ingredient.quantity) || 0),
+                  recipes: [...(existing.recipes || []), recipe.title].filter(Boolean)
+                });
+              } else {
+                ingredientMap.set(key, {
+                  ...ingredient,
+                  quantity: Number(ingredient.quantity) || 0,
+                  recipes: [recipe.title].filter(Boolean)
+                });
+              }
+            }
+          }
+        });
+      }
     });
 
-    return Array.from(ingredientMap.values()).sort((a, b) => 
-      a.name.localeCompare(b.name)
-    );
+    return Array.from(ingredientMap.values())
+      .filter(item => item && item.name)
+      .sort((a, b) => (a.name || '').localeCompare(b.name || ''));
   };
 
   const getWeekMeals = (weekStart = currentWeek) => {

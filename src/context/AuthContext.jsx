@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
-import { kitAPI } from '../lib/kit'
 
 const AuthContext = createContext()
 
@@ -18,42 +17,71 @@ export const AuthProvider = ({ children }) => {
   const [session, setSession] = useState(null)
 
   useEffect(() => {
+    let mounted = true
+
     // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-      setUser(session?.user ?? null)
-      setLoading(false)
-    })
+    const getInitialSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession()
+        
+        if (error) {
+          console.error('Error getting session:', error)
+        }
+        
+        if (mounted) {
+          setSession(session)
+          setUser(session?.user ?? null)
+        }
+      } catch (error) {
+        console.error('Auth initialization error:', error)
+      } finally {
+        if (mounted) {
+          setLoading(false)
+        }
+      }
+    }
+
+    getInitialSession()
 
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
-        setSession(session)
-        setUser(session?.user ?? null)
-        setLoading(false)
+        if (mounted) {
+          console.log('Auth state changed:', event, session?.user?.email)
+          setSession(session)
+          setUser(session?.user ?? null)
+          setLoading(false)
 
-        // Handle new user registration
-        if (event === 'SIGNED_IN' && session?.user) {
-          await handleUserSignIn(session.user)
+          // Handle new user registration
+          if (event === 'SIGNED_IN' && session?.user) {
+            await handleUserSignIn(session.user)
+          }
         }
       }
     )
 
-    return () => subscription.unsubscribe()
+    return () => {
+      mounted = false
+      subscription.unsubscribe()
+    }
   }, [])
 
   const handleUserSignIn = async (user) => {
     try {
       // Check if this is a new user (first sign in)
-      const { data: existingProfile } = await supabase
+      const { data: existingProfile, error: profileError } = await supabase
         .from('user_profiles_mp2025')
         .select('id')
         .eq('id', user.id)
         .single()
 
+      if (profileError && profileError.code !== 'PGRST116') {
+        console.error('Error checking user profile:', profileError)
+      }
+
       if (!existingProfile) {
         // Create user profile
-        const { error: profileError } = await supabase
+        const { error: insertError } = await supabase
           .from('user_profiles_mp2025')
           .insert([
             {
@@ -61,48 +89,19 @@ export const AuthProvider = ({ children }) => {
               email: user.email,
               full_name: user.user_metadata?.full_name || user.email.split('@')[0],
               avatar_url: user.user_metadata?.avatar_url || null,
-              newsletter_subscribed: true, // Default to subscribed
+              newsletter_subscribed: true,
               created_at: new Date().toISOString()
             }
           ])
 
-        if (profileError) {
-          console.error('Error creating user profile:', profileError)
+        if (insertError) {
+          console.error('Error creating user profile:', insertError)
         } else {
-          // Subscribe to newsletter
-          await subscribeToNewsletter(user)
+          console.log('User profile created successfully')
         }
       }
     } catch (error) {
       console.error('Error handling user sign in:', error)
-    }
-  }
-
-  const subscribeToNewsletter = async (user) => {
-    try {
-      const firstName = user.user_metadata?.full_name?.split(' ')[0] || ''
-      const lastName = user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || ''
-
-      const result = await kitAPI.subscribeToNewsletter(
-        user.email,
-        firstName,
-        lastName,
-        ['meal-planner-app', 'new-user']
-      )
-
-      if (result.success) {
-        console.log('Successfully subscribed to newsletter')
-        // Update user profile with newsletter subscription status
-        await supabase
-          .from('user_profiles_mp2025')
-          .update({ 
-            newsletter_subscribed: true,
-            kit_subscriber_id: result.data?.subscription?.id
-          })
-          .eq('id', user.id)
-      }
-    } catch (error) {
-      console.error('Newsletter subscription error:', error)
     }
   }
 
@@ -111,7 +110,7 @@ export const AuthProvider = ({ children }) => {
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/#/dashboard`,
+          redirectTo: `${window.location.origin}`,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -120,10 +119,14 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
+
       return { success: true, data }
     } catch (error) {
       console.error('Google sign in error:', error)
-      return { success: false, error: error.message }
+      return { 
+        success: false, 
+        error: error.message || 'Google authentication is not properly configured. Please use email authentication.'
+      }
     }
   }
 
@@ -135,6 +138,7 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
+
       return { success: true, data }
     } catch (error) {
       console.error('Email sign in error:', error)
@@ -155,6 +159,7 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
+
       return { success: true, data }
     } catch (error) {
       console.error('Email sign up error:', error)
@@ -168,8 +173,12 @@ export const AuthProvider = ({ children }) => {
       if (error) throw error
 
       // Clear local storage
-      localStorage.removeItem('mealPlannerRecipes')
-      localStorage.removeItem('mealPlannerMealPlans')
+      try {
+        localStorage.removeItem('mealPlannerRecipes')
+        localStorage.removeItem('mealPlannerMealPlans')
+      } catch (e) {
+        console.warn('Error clearing localStorage:', e)
+      }
 
       return { success: true }
     } catch (error) {
@@ -180,35 +189,20 @@ export const AuthProvider = ({ children }) => {
 
   const updateProfile = async (updates) => {
     try {
+      if (!user) {
+        throw new Error('No user logged in')
+      }
+
       const { error } = await supabase
         .from('user_profiles_mp2025')
         .update(updates)
         .eq('id', user.id)
 
       if (error) throw error
+
       return { success: true }
     } catch (error) {
       console.error('Profile update error:', error)
-      return { success: false, error: error.message }
-    }
-  }
-
-  const updateNewsletterSubscription = async (subscribed) => {
-    try {
-      if (subscribed && !user.newsletter_subscribed) {
-        // Subscribe to newsletter
-        await subscribeToNewsletter(user)
-      }
-
-      const { error } = await supabase
-        .from('user_profiles_mp2025')
-        .update({ newsletter_subscribed: subscribed })
-        .eq('id', user.id)
-
-      if (error) throw error
-      return { success: true }
-    } catch (error) {
-      console.error('Newsletter subscription update error:', error)
       return { success: false, error: error.message }
     }
   }
@@ -221,8 +215,7 @@ export const AuthProvider = ({ children }) => {
     signInWithEmail,
     signUpWithEmail,
     signOut,
-    updateProfile,
-    updateNewsletterSubscription
+    updateProfile
   }
 
   return (
