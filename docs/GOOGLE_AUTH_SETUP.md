@@ -25,24 +25,25 @@
 3. Name it: `Meal Planner App`
 
 ### 3. Configure Authorized URLs
+
+**⚠️ IMPORTANT: Use your actual deployed domain, not localhost**
+
 **Authorized JavaScript origins:**
 ```
 https://labsvtcxahdfzeqmnnyz.supabase.co
-https://yourdomain.com
+https://your-vercel-app.vercel.app
 https://meals.yourdomain.com
-http://localhost:5173
 ```
 
 **Authorized redirect URIs:**
 ```
 https://labsvtcxahdfzeqmnnyz.supabase.co/auth/v1/callback
-https://yourdomain.com/auth/callback  
-https://meals.yourdomain.com/auth/callback
-http://localhost:5173/auth/callback
 ```
 
+**❌ DO NOT ADD localhost URLs for production**
+
 ### 4. Get Your Credentials
-- Copy **Client ID** 
+- Copy **Client ID**
 - Copy **Client Secret**
 
 ## ⚙️ Step 3: Configure Supabase
@@ -50,18 +51,20 @@ http://localhost:5173/auth/callback
 ### 1. Add Google Credentials to Supabase
 1. Back in Supabase Dashboard
 2. **Authentication** → **Providers** → **Google**
-3. Paste **Client ID** 
+3. Paste **Client ID**
 4. Paste **Client Secret**
 5. Click **Save**
 
 ### 2. Configure Site URL
 1. Go to **Authentication** → **Settings**
-2. Set **Site URL**: `https://meals.yourdomain.com`
+2. Set **Site URL**: `https://your-vercel-app.vercel.app` (or your custom domain)
 3. Add **Additional Redirect URLs**:
-   ```
-   https://meals.yourdomain.com/**
-   http://localhost:5173/**
-   ```
+```
+https://your-vercel-app.vercel.app/**
+https://meals.yourdomain.com/**
+```
+
+**⚠️ CRITICAL: Replace with your actual domain!**
 
 ## 🔒 Step 4: Update OAuth Consent Screen
 
@@ -77,63 +80,91 @@ http://localhost:5173/auth/callback
 ### 2. Add Scopes
 Add these scopes:
 - `email`
-- `profile` 
+- `profile`
 - `openid`
 
 ### 3. Add Test Users (if in testing mode)
 - Add your email and test users
 
-## 🧪 Step 5: Test Configuration
+## 🚨 Step 5: Fix Current Issue
 
-### 1. Local Testing
-```bash
-npm run dev
-# Try Google sign-in at http://localhost:5173
+### Immediate Fix:
+1. **Go to Google Cloud Console**
+2. **APIs & Services** → **Credentials**
+3. **Edit your OAuth 2.0 Client ID**
+4. **Remove ALL localhost URLs**
+5. **Add your deployed domain URLs only**
+
+### Example Configuration:
+```
+Authorized JavaScript origins:
+✅ https://labsvtcxahdfzeqmnnyz.supabase.co
+✅ https://your-vercel-app.vercel.app
+✅ https://meals.yourdomain.com
+
+Authorized redirect URIs:
+✅ https://labsvtcxahdfzeqmnnyz.supabase.co/auth/v1/callback
+
+❌ http://localhost:5173 (REMOVE THIS)
+❌ http://localhost:5173/auth/callback (REMOVE THIS)
 ```
 
-### 2. Production Testing  
-- Deploy to your subdomain
-- Test Google authentication
-- Check browser console for errors
+## 🧪 Step 6: Test Configuration
+
+### 1. Production Testing
+- Go to your deployed app
+- Try Google sign-in
+- Should redirect properly now
+
+### 2. Local Development
+For local development, create a separate OAuth client:
+1. Create another OAuth 2.0 Client ID
+2. Name it: `Meal Planner App - Development`
+3. Add localhost URLs to this one only
+4. Use different credentials for local development
+
+## 🔧 Step 7: Environment Variables
+
+### Production Environment Variables:
+```bash
+REACT_APP_SUPABASE_URL=https://labsvtcxahdfzeqmnnyz.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=your-anon-key
+```
+
+### Vercel Environment Variables:
+1. Go to Vercel Dashboard → Your Project
+2. Settings → Environment Variables
+3. Add the above variables
+
+## ✅ Verification Checklist
+
+- [ ] Google OAuth client configured with production URLs only
+- [ ] Supabase Site URL matches your deployed domain
+- [ ] No localhost URLs in production OAuth client
+- [ ] OAuth consent screen configured
+- [ ] Environment variables set in Vercel
+- [ ] Test Google sign-in on deployed app
 
 ## 🚨 Troubleshooting
 
 ### Error: "redirect_uri_mismatch"
-**Fix:** Add exact redirect URI to Google Console:
+**Fix:** Make sure the redirect URI in Google Console exactly matches:
 ```
 https://labsvtcxahdfzeqmnnyz.supabase.co/auth/v1/callback
 ```
 
-### Error: "Invalid client"
-**Fix:** Double-check Client ID and Secret in Supabase
+### Error: "This site can't be reached localhost"
+**Fix:** Remove all localhost URLs from Google OAuth client configuration
 
 ### Error: "Access blocked"
 **Fix:** Publish OAuth consent screen or add user as tester
 
-### Error: "Provider not enabled"
-**Fix:** Ensure Google provider is toggled ON in Supabase
+## 🔄 Quick Fix Steps:
 
-## ✅ Verification Checklist
+1. **Google Cloud Console** → **Credentials**
+2. **Edit OAuth Client**
+3. **Remove localhost URLs**
+4. **Save changes**
+5. **Test again on deployed app**
 
-- [ ] Google provider enabled in Supabase
-- [ ] Google OAuth app created
-- [ ] Client ID/Secret added to Supabase  
-- [ ] Redirect URIs match exactly
-- [ ] Site URL configured in Supabase
-- [ ] OAuth consent screen configured
-- [ ] Local testing works
-- [ ] Production testing works
-
-## 🔧 Alternative: Email-Only Authentication
-
-If you prefer to disable Google auth temporarily:
-
-```javascript
-// In AuthModal.jsx, comment out Google sign-in button
-{/* <motion.button
-  onClick={handleGoogleSignIn}
-  // ... Google sign-in code
->
-  Continue with Google
-</motion.button> */}
-```
+The error should be resolved immediately after removing localhost URLs from your Google OAuth configuration.

@@ -86,10 +86,7 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
   }
 
   const handleInputChange = (field, value) => {
-    setFormData(prev => ({
-      ...prev,
-      [field]: value
-    }))
+    setFormData(prev => ({ ...prev, [field]: value }))
     setError('')
     setSuccess('')
   }
@@ -318,6 +315,21 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
               </div>
             </div>
           )}
+
+          {/* Google OAuth Error Notice */}
+          <div className="mt-4 p-4 bg-blue-50 rounded-xl border border-blue-200">
+            <div className="flex items-start space-x-3">
+              <SafeIcon icon={FiIcons.FiInfo} className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-800">
+                  Google Sign-In Issue?
+                </p>
+                <p className="text-xs text-blue-600 mt-1">
+                  If Google sign-in redirects to localhost, please use email authentication instead. We're working on fixing this issue.
+                </p>
+              </div>
+            </div>
+          </div>
 
           {/* Terms */}
           <p className="text-xs text-gray-500 text-center mt-4">
