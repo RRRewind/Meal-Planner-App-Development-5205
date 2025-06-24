@@ -21,11 +21,6 @@
   background: #94a3b8;
 }
 
-/* Smooth transitions */
-* {
-  transition: all 0.2s ease;
-}
-
 /* Focus styles */
 button:focus,
 input:focus,
@@ -35,220 +30,158 @@ select:focus {
   outline-offset: 2px;
 }
 
-/* CRITICAL: Fix for iOS text rendering and flickering */
+/* CRITICAL: Mobile-first animation fixes to prevent flickering */
 * {
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  /* Force hardware acceleration to prevent flickering */
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
+  /* Force hardware acceleration for all elements */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  
+  /* Prevent layout shifts */
+  will-change: auto;
+  
+  /* Smooth transitions only for non-transform properties */
+  transition: opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
-/* Prevent iOS text size adjustment */
+/* Prevent iOS text size adjustment and stabilize rendering */
 html {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
-  /* Stabilize rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Force GPU layer */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 
-/* CRITICAL: Fix for iOS Safari flickering during scroll and animations */
+/* CRITICAL: Prevent mobile flickering during scroll */
 body {
   -webkit-backface-visibility: hidden;
-  -webkit-transform: translateZ(0);
-  transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
   /* Prevent overscroll bounce on iOS */
   overscroll-behavior: none;
   -webkit-overflow-scrolling: touch;
+  /* Disable momentum scrolling to prevent flicker */
+  -webkit-overflow-scrolling: auto;
 }
 
-/* CRITICAL: Stable gradient text class to prevent flickering */
+/* CRITICAL: Stable gradient text without flickering */
 .gradient-text-stable {
   background: linear-gradient(90deg, #ea580c 0%, #dc2626 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* Force hardware acceleration to prevent flickering */
+  /* Prevent flickering with stable transforms */
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  /* Improve text rendering on iOS */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* Prevent layout shifts */
+  /* Disable will-change to prevent layer creation/destruction */
   will-change: auto;
-  /* Stabilize on iOS */
-  -webkit-perspective: 1000;
-  perspective: 1000;
+  /* Use subpixel antialiasing on iOS */
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
-/* CRITICAL: Prevent webkit transform flickering */
+/* Fix gradient text flickering */
 .bg-clip-text {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* Force hardware acceleration to prevent flickering */
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  /* Improve text rendering on iOS */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* Stabilize rendering */
-  -webkit-perspective: 1000;
-  perspective: 1000;
-}
-
-/* Fix for gradient text flickering on iOS */
-.text-transparent {
-  /* Stabilize the gradient text rendering */
   will-change: auto;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
+  -webkit-font-smoothing: subpixel-antialiased;
 }
 
-/* CRITICAL: Prevent layout shifts during scroll on mobile */
+/* CRITICAL: Mobile-specific optimizations */
 @media (max-width: 768px) {
-  * {
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    -webkit-transform: translateZ(0);
-    transform: translateZ(0);
-    /* Reduce motion blur on mobile */
-    -webkit-filter: blur(0);
-    filter: blur(0);
+  /* Reduce motion for all elements on mobile */
+  *, *::before, *::after {
+    -webkit-transform: translate3d(0, 0, 0) !important;
+    transform: translate3d(0, 0, 0) !important;
+    -webkit-backface-visibility: hidden !important;
+    backface-visibility: hidden !important;
+    /* Disable complex transitions on mobile */
+    transition: opacity 0.2s ease !important;
   }
-
-  /* Specifically fix gradient text on mobile */
-  .bg-gradient-to-r,
-  .gradient-text-stable {
+  
+  /* Force layer creation for animated elements */
+  .motion-safe,
+  .framer-motion,
+  [data-framer-name] {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    /* Force layer creation */
+    /* Force composite layer */
     will-change: transform;
-    /* Stabilize on mobile */
-    -webkit-perspective: 1000;
-    perspective: 1000;
   }
-
-  /* CRITICAL: Optimize motion elements for mobile */
-  .motion-reduce {
-    animation: none !important;
-    transition: none !important;
-  }
-
-  /* Force GPU rendering for all animated elements */
-  [data-framer-name],
-  .framer-motion,
+  
+  /* Disable complex animations on mobile */
   .animate-pulse,
   .animate-spin {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    will-change: transform;
+    animation: none !important;
   }
-}
-
-/* Animation utilities with mobile optimization */
-.slide-up {
-  animation: slideUp 0.3s ease-out;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translate3d(0, 20px, 0);
-  }
-  to {
-    opacity: 1;
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-.fade-in {
-  animation: fadeIn 0.3s ease-out;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-/* CRITICAL: Optimize for iOS Safari */
-@supports (-webkit-touch-callout: none) {
-  /* iOS Safari specific fixes */
-  .bg-clip-text,
-  .gradient-text-stable {
-    /* Force GPU rendering */
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    /* Prevent text flickering */
-    -webkit-font-smoothing: subpixel-antialiased;
-    /* Stabilize rendering */
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    /* Force layer creation */
-    will-change: transform;
-    -webkit-perspective: 1000;
-    perspective: 1000;
-  }
-
-  /* Fix for gradient backgrounds on iOS */
+  
+  /* Optimize gradient backgrounds */
   .bg-gradient-to-r,
   .bg-gradient-to-br {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    will-change: transform;
+    will-change: auto;
   }
+}
 
-  /* CRITICAL: Optimize Framer Motion for iOS */
-  [data-framer-name] {
+/* CRITICAL: iOS Safari specific fixes */
+@supports (-webkit-touch-callout: none) {
+  /* Target iOS Safari specifically */
+  * {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    will-change: transform;
-    -webkit-perspective: 1000;
-    perspective: 1000;
+    /* Use subpixel antialiasing */
+    -webkit-font-smoothing: subpixel-antialiased;
+  }
+  
+  /* Fix gradient text on iOS */
+  .gradient-text-stable,
+  .bg-clip-text {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+    /* Force layer without will-change */
+    -webkit-perspective: 1000px;
+    perspective: 1000px;
   }
 }
 
-/* CRITICAL: Framer Motion optimization for mobile */
+/* CRITICAL: Framer Motion optimizations for mobile */
 @media (max-width: 768px) {
-  /* Reduce motion for better performance on mobile */
+  /* Reduce motion for better performance */
   @media (prefers-reduced-motion: no-preference) {
-    .framer-motion-element {
+    .motion-safe {
       -webkit-transform: translate3d(0, 0, 0);
       transform: translate3d(0, 0, 0);
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
-      will-change: transform;
     }
   }
-
-  /* Force reduced motion on slow connections */
-  @media (prefers-reduced-data: reduce) {
+  
+  /* Force reduced motion on slower devices */
+  @media (prefers-reduced-motion: reduce) {
     * {
       animation: none !important;
       transition: none !important;
@@ -256,42 +189,100 @@ body {
   }
 }
 
-/* CRITICAL: Fix for Vercel/production specific issues */
+/* Performance optimization classes */
+.performance-optimized {
+  contain: layout style paint;
+  will-change: auto;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
 .vercel-optimized {
-  /* Force hardware acceleration */
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  /* Optimize for production builds */
   will-change: auto;
-  /* Prevent paint flashing */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* CRITICAL: Mobile-specific animation fixes */
-@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
-  /* High DPI mobile devices */
-  * {
-    /* Force subpixel rendering */
-    -webkit-font-smoothing: subpixel-antialiased;
-    /* Stabilize transforms */
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-  }
-}
-
-/* CRITICAL: Specific fixes for motion components */
+/* CRITICAL: Motion component specific fixes */
 .motion-safe {
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  /* Prevent flicker during state changes */
+  will-change: auto;
 }
 
-/* Performance optimization for lists and grids */
-.performance-optimized {
-  contain: layout style paint;
-  will-change: auto;
+/* Mobile tap optimizations */
+@media (max-width: 768px) {
+  button, 
+  [role="button"],
+  .clickable {
+    /* Prevent flicker on tap */
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+    /* Force hardware acceleration */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
+
+/* CRITICAL: High DPI mobile optimization */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  * {
+    /* Force subpixel rendering on high DPI */
+    -webkit-font-smoothing: subpixel-antialiased;
+    -moz-osx-font-smoothing: auto;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
+
+/* Animation utilities optimized for mobile */
+.slide-up {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.fade-in {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* CRITICAL: Disable problematic animations on mobile */
+@media (max-width: 768px) {
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translate3d(0, 10px, 0);
+    }
+    to {
+      opacity: 1;
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  /* Disable complex keyframes on mobile */
+  .complex-animation {
+    animation: none !important;
+  }
 }
