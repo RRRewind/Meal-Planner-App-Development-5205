@@ -59,6 +59,8 @@ export const MealPlanProvider = ({ children }) => {
   const loadUserData = async () => {
     setLoading(true);
     try {
+      console.log('📊 Loading user data from Supabase...');
+      
       // Load recipes
       const { data: recipesData, error: recipesError } = await supabase
         .from('recipes_mp2025')
@@ -90,7 +92,7 @@ export const MealPlanProvider = ({ children }) => {
             if (!mealPlansMap[plan.date]) {
               mealPlansMap[plan.date] = {};
             }
-            
+
             if (plan.meal_type === 'snacks') {
               if (!mealPlansMap[plan.date][plan.meal_type]) {
                 mealPlansMap[plan.date][plan.meal_type] = [];
@@ -106,17 +108,21 @@ export const MealPlanProvider = ({ children }) => {
       }
 
       // Transform recipes data
-      const formattedRecipes = Array.isArray(recipesData) ? recipesData.map(recipe => ({
-        ...recipe,
-        prepTime: recipe.prep_time || recipe.prepTime || 0,
-        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
-        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : []
-      })) : [];
+      const formattedRecipes = Array.isArray(recipesData) 
+        ? recipesData.map(recipe => ({
+            ...recipe,
+            prepTime: recipe.prep_time || recipe.prepTime || 0,
+            ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+            instructions: Array.isArray(recipe.instructions) ? recipe.instructions : []
+          }))
+        : [];
 
       setRecipes(formattedRecipes);
       setMealPlans(mealPlansMap);
+
       console.log('✅ User data loaded successfully');
-      console.log('📊 Loaded meal plans:', mealPlansMap);
+      console.log('📊 Loaded recipes:', formattedRecipes.length);
+      console.log('📋 Loaded meal plans:', Object.keys(mealPlansMap).length);
     } catch (error) {
       console.error('Error loading user data:', error);
       // Fallback to localStorage
@@ -181,6 +187,7 @@ export const MealPlanProvider = ({ children }) => {
 
     if (user) {
       try {
+        console.log('💾 Saving recipe to Supabase...');
         const { data, error } = await supabase
           .from('recipes_mp2025')
           .insert([{
@@ -206,6 +213,7 @@ export const MealPlanProvider = ({ children }) => {
         };
 
         setRecipes(prev => [formattedRecipe, ...prev]);
+        console.log('✅ Recipe saved to Supabase');
         return formattedRecipe;
       } catch (error) {
         console.error('Error adding recipe:', error);
@@ -329,6 +337,7 @@ export const MealPlanProvider = ({ children }) => {
           console.error('❌ Supabase error adding meal to plan:', error);
           throw error;
         }
+
         console.log('✅ Successfully saved to Supabase');
       } catch (error) {
         console.error('❌ Error adding meal to plan in Supabase:', error);
@@ -339,7 +348,6 @@ export const MealPlanProvider = ({ children }) => {
     // Update local state
     setMealPlans(prev => {
       const updated = { ...prev };
-      
       if (!updated[dateKey]) {
         updated[dateKey] = {};
       }
@@ -365,11 +373,7 @@ export const MealPlanProvider = ({ children }) => {
     }
 
     const dateKey = format(date, 'yyyy-MM-dd');
-    console.log('🗑️ Removing meal from plan:', {
-      dateKey,
-      mealType,
-      recipeId
-    });
+    console.log('🗑️ Removing meal from plan:', { dateKey, mealType, recipeId });
 
     if (user) {
       try {
@@ -385,10 +389,12 @@ export const MealPlanProvider = ({ children }) => {
         }
 
         const { error } = await query;
+
         if (error) {
           console.error('❌ Supabase error removing meal from plan:', error);
           throw error;
         }
+
         console.log('✅ Successfully removed from Supabase');
       } catch (error) {
         console.error('❌ Error removing meal from plan in Supabase:', error);
@@ -399,7 +405,7 @@ export const MealPlanProvider = ({ children }) => {
     // Update local state
     setMealPlans(prev => {
       const updated = { ...prev };
-      
+
       if (mealType === 'snacks' && recipeId) {
         if (updated[dateKey] && Array.isArray(updated[dateKey].snacks)) {
           updated[dateKey] = {

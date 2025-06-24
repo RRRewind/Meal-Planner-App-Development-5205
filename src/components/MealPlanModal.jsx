@@ -5,7 +5,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useMealPlan } from '../context/MealPlanContext';
 
-const { FiX, FiSearch, FiPlus, FiTrash2, FiCoffee, FiSun, FiSunset, FiMoreHorizontal, FiPlay, FiUtensils } = FiIcons;
+const { FiX, FiSearch, FiPlus, FiTrash2, FiCoffee, FiSun, FiSunset, FiMoreHorizontal, FiPlay, FiClock, FiUsers } = FiIcons;
 
 const MealPlanModal = ({ date, mealType, onClose }) => {
   const { recipes, addMealToPlan, removeMealFromPlan, getWeekMeals } = useMealPlan();
@@ -44,13 +44,12 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
       'dinner': 'Dinner',
       'snacks': 'Snack'
     };
-    
     const defaultCategory = mealTypeToCategoryMap[mealType] || 'all';
     setSelectedCategory(defaultCategory);
   }, [mealType]);
 
   const filteredRecipes = recipes.filter(recipe => {
-    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || 
                            recipe.category.toLowerCase() === selectedCategory.toLowerCase();
@@ -65,9 +64,11 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
       mealType,
       recipe: recipe.title
     });
+
     try {
       addMealToPlan(date, mealType, recipe);
       console.log('✅ Recipe added successfully');
+      
       // For non-snacks, close the modal after adding
       if (mealType !== 'snacks') {
         onClose();
@@ -83,6 +84,7 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
       mealType,
       recipeId
     });
+
     try {
       removeMealFromPlan(date, mealType, recipeId);
       console.log('✅ Recipe removed successfully');
@@ -90,6 +92,17 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
       console.error('❌ Error removing recipe from meal plan:', error);
     }
   };
+
+  // Debug logging
+  console.log('🎯 MealPlanModal Debug:', {
+    date: dateKey,
+    mealType,
+    recipesCount: recipes.length,
+    filteredRecipesCount: filteredRecipes.length,
+    currentMeals,
+    selectedCategory,
+    searchTerm
+  });
 
   return (
     <motion.div
@@ -132,7 +145,8 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
 
         <div className="flex flex-col h-[calc(90vh-140px)]">
           {/* Current Meals */}
-          {((mealType === 'snacks' && currentMeals.length > 0) || (mealType !== 'snacks' && currentMeals)) && (
+          {((mealType === 'snacks' && currentMeals.length > 0) || 
+            (mealType !== 'snacks' && currentMeals)) && (
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h3 className="font-semibold text-gray-900 mb-3">Current Selection</h3>
               <div className="space-y-2">
@@ -263,11 +277,11 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-600">
                           <div className="flex items-center space-x-1">
-                            <SafeIcon icon={FiIcons.FiClock} className="w-4 h-4" />
-                            <span>{recipe.prepTime}m</span>
+                            <SafeIcon icon={FiClock} className="w-4 h-4" />
+                            <span>{recipe.prepTime || recipe.prep_time || 0}m</span>
                           </div>
                           <div className="flex items-center space-x-1">
-                            <SafeIcon icon={FiIcons.FiUsers} className="w-4 h-4" />
+                            <SafeIcon icon={FiUsers} className="w-4 h-4" />
                             <span>{recipe.servings}</span>
                           </div>
                         </div>
@@ -296,11 +310,11 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
               </div>
             ) : (
               <div className="text-center py-16">
-                <SafeIcon icon={FiUtensils} className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <SafeIcon icon={FiCoffee} className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No recipes found</h3>
                 <p className="text-gray-600">
                   {recipes.length === 0 
-                    ? 'Add some recipes first to start planning meals'
+                    ? 'Add some recipes first to start planning meals' 
                     : 'Try adjusting your search or filter criteria'
                   }
                 </p>
