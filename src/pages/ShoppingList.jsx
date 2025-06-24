@@ -1,18 +1,97 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useMealPlan } from '../context/MealPlanContext';
 
-const { FiShoppingCart, FiCheck, FiX, FiCopy, FiDownload, FiRefreshCw } = FiIcons;
+const { FiShoppingCart, FiCheck, FiX, FiCopy, FiDownload, FiRefreshCw, FiStar } = FiIcons;
 
 const ShoppingList = () => {
   const { getShoppingList, getUpcomingMeals } = useMealPlan();
   const [checkedItems, setCheckedItems] = useState(new Set());
   const [showCopied, setShowCopied] = useState(false);
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [hasTriggeredConfetti, setHasTriggeredConfetti] = useState(false);
 
   const shoppingList = getShoppingList();
   const upcomingMeals = getUpcomingMeals();
+
+  // Check if all items are completed and trigger confetti
+  useEffect(() => {
+    const allItemsChecked = shoppingList.length > 0 && checkedItems.size === shoppingList.length;
+    
+    if (allItemsChecked && !hasTriggeredConfetti) {
+      setHasTriggeredConfetti(true);
+      triggerConfettiCelebration();
+      setShowCompletionModal(true);
+      
+      // Auto-hide modal after 4 seconds
+      setTimeout(() => {
+        setShowCompletionModal(false);
+      }, 4000);
+    } else if (!allItemsChecked && hasTriggeredConfetti) {
+      setHasTriggeredConfetti(false);
+    }
+  }, [checkedItems, shoppingList.length, hasTriggeredConfetti]);
+
+  const triggerConfettiCelebration = () => {
+    // Multiple confetti bursts for dramatic effect
+    const duration = 3000;
+    const animationEnd = Date.now() + duration;
+    
+    const randomInRange = (min, max) => {
+      return Math.random() * (max - min) + min;
+    };
+
+    const interval = setInterval(() => {
+      const timeLeft = animationEnd - Date.now();
+
+      if (timeLeft <= 0) {
+        clearInterval(interval);
+        return;
+      }
+
+      const particleCount = 150 * (timeLeft / duration);
+
+      // Left side burst
+      confetti({
+        particleCount,
+        angle: 60,
+        spread: 55,
+        origin: { x: 0, y: 0.8 },
+        colors: ['#f97316', '#ea580c', '#dc2626', '#16a34a', '#059669', '#0891b2']
+      });
+
+      // Right side burst  
+      confetti({
+        particleCount,
+        angle: 120,
+        spread: 55,
+        origin: { x: 1, y: 0.8 },
+        colors: ['#f97316', '#ea580c', '#dc2626', '#16a34a', '#059669', '#0891b2']
+      });
+
+      // Center burst
+      confetti({
+        particleCount: particleCount / 2,
+        angle: 90,
+        spread: 70,
+        origin: { x: 0.5, y: 0.6 },
+        colors: ['#f97316', '#ea580c', '#dc2626', '#16a34a', '#059669', '#0891b2']
+      });
+    }, 250);
+
+    // Final big burst
+    setTimeout(() => {
+      confetti({
+        particleCount: 200,
+        spread: 100,
+        origin: { y: 0.6 },
+        colors: ['#f97316', '#ea580c', '#dc2626', '#16a34a', '#059669', '#0891b2']
+      });
+    }, 1000);
+  };
 
   const toggleItem = (itemName) => {
     const newCheckedItems = new Set(checkedItems);
@@ -32,7 +111,7 @@ const ShoppingList = () => {
     const listText = shoppingList
       .map(item => `${item.quantity} ${item.unit} ${item.name}`)
       .join('\n');
-    
+
     try {
       await navigator.clipboard.writeText(listText);
       setShowCopied(true);
@@ -81,6 +160,8 @@ const ShoppingList = () => {
     if (bIndex === -1) return -1;
     return aIndex - bIndex;
   });
+
+  const completionPercentage = shoppingList.length > 0 ? (checkedItems.size / shoppingList.length) * 100 : 0;
 
   return (
     <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -150,6 +231,51 @@ const ShoppingList = () => {
         )}
       </AnimatePresence>
 
+      {/* Completion Celebration Modal */}
+      <AnimatePresence>
+        {showCompletionModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+          >
+            <motion.div
+              initial={{ scale: 0.8, opacity: 0, y: 50 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.8, opacity: 0, y: 50 }}
+              className="bg-white rounded-2xl p-8 shadow-2xl max-w-md mx-4 text-center"
+            >
+              <motion.div
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ repeat: Infinity, duration: 2 }}
+                className="w-20 h-20 bg-gradient-to-r from-green-400 to-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6"
+              >
+                <SafeIcon icon={FiStar} className="w-10 h-10 text-white" />
+              </motion.div>
+              
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                🎉 Shopping Complete! 🎉
+              </h2>
+              
+              <p className="text-gray-600 mb-6">
+                Congratulations! You've completed your entire shopping list. 
+                Time to cook some amazing meals! 👨‍🍳✨
+              </p>
+              
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={() => setShowCompletionModal(false)}
+                className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-6 py-3 rounded-xl font-semibold shadow-lg"
+              >
+                Let's Cook! 🚀
+              </motion.button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Shopping List */}
       {shoppingList.length > 0 ? (
         <motion.div
@@ -162,16 +288,46 @@ const ShoppingList = () => {
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-orange-100">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-semibold text-gray-900">Progress</h3>
-              <span className="text-sm text-gray-600">
-                {checkedItems.size} of {shoppingList.length} items
-              </span>
+              <div className="flex items-center space-x-2">
+                <span className="text-sm text-gray-600">
+                  {checkedItems.size} of {shoppingList.length} items
+                </span>
+                {completionPercentage === 100 && (
+                  <motion.div
+                    initial={{ scale: 0 }}
+                    animate={{ scale: 1 }}
+                    className="flex items-center space-x-1 text-green-600"
+                  >
+                    <SafeIcon icon={FiCheck} className="w-4 h-4" />
+                    <span className="text-sm font-medium">Complete!</span>
+                  </motion.div>
+                )}
+              </div>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-3">
+            
+            <div className="relative w-full bg-gray-200 rounded-full h-4 overflow-hidden">
               <motion.div
                 initial={{ width: 0 }}
-                animate={{ width: `${(checkedItems.size / shoppingList.length) * 100}%` }}
-                className="bg-gradient-to-r from-green-400 to-emerald-500 h-3 rounded-full transition-all duration-300"
+                animate={{ width: `${completionPercentage}%` }}
+                className={`h-4 rounded-full transition-all duration-300 ${
+                  completionPercentage === 100 
+                    ? 'bg-gradient-to-r from-green-400 to-emerald-500' 
+                    : 'bg-gradient-to-r from-orange-400 to-red-500'
+                }`}
               />
+              
+              {completionPercentage === 100 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: [0, 1, 0] }}
+                  transition={{ repeat: Infinity, duration: 1.5 }}
+                  className="absolute inset-0 bg-white bg-opacity-30 rounded-full"
+                />
+              )}
+            </div>
+            
+            <div className="mt-2 text-right text-sm font-medium text-gray-900">
+              {Math.round(completionPercentage)}%
             </div>
           </div>
 
@@ -197,8 +353,8 @@ const ShoppingList = () => {
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: index * 0.05 }}
                       className={`flex items-center space-x-4 p-4 rounded-xl border-2 transition-all duration-200 ${
-                        isChecked
-                          ? 'bg-green-50 border-green-200'
+                        isChecked 
+                          ? 'bg-green-50 border-green-200' 
                           : 'bg-gray-50 border-gray-200 hover:border-orange-300'
                       }`}
                     >
@@ -207,18 +363,25 @@ const ShoppingList = () => {
                         whileTap={{ scale: 0.9 }}
                         onClick={() => toggleItem(item.name)}
                         className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
-                          isChecked
-                            ? 'bg-green-500 border-green-500'
+                          isChecked 
+                            ? 'bg-green-500 border-green-500' 
                             : 'border-gray-300 hover:border-orange-400'
                         }`}
                       >
                         {isChecked && (
-                          <SafeIcon icon={FiCheck} className="w-4 h-4 text-white" />
+                          <motion.div
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1 }}
+                          >
+                            <SafeIcon icon={FiCheck} className="w-4 h-4 text-white" />
+                          </motion.div>
                         )}
                       </motion.button>
 
                       <div className="flex-1">
-                        <div className={`font-medium ${isChecked ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                        <div className={`font-medium transition-all duration-200 ${
+                          isChecked ? 'line-through text-gray-500' : 'text-gray-900'
+                        }`}>
                           {item.quantity} {item.unit} {item.name}
                         </div>
                         <div className="text-sm text-gray-500 mt-1">
