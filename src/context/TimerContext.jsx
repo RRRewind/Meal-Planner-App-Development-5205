@@ -21,7 +21,7 @@ export const TimerProvider = ({ children }) => {
   // Timer effect
   useEffect(() => {
     let interval = null;
-    
+
     if (isRunning && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft(time => {
@@ -29,7 +29,7 @@ export const TimerProvider = ({ children }) => {
             setIsRunning(false);
             playAlertSound();
             showNotification();
-            return 0;
+            return 0; // Timer completes but stays active
           }
           return time - 1;
         });
@@ -37,7 +37,7 @@ export const TimerProvider = ({ children }) => {
     } else if (!isRunning) {
       clearInterval(interval);
     }
-    
+
     return () => clearInterval(interval);
   }, [isRunning, timeLeft]);
 
@@ -45,7 +45,7 @@ export const TimerProvider = ({ children }) => {
     try {
       // Create audio context for alert sound
       const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-      
+
       // Create a sequence of beeps
       const playBeep = (frequency, duration, delay = 0) => {
         setTimeout(() => {
@@ -66,13 +66,12 @@ export const TimerProvider = ({ children }) => {
         }, delay);
       };
 
-      // Play alert sequence: 3 beeps
-      playBeep(800, 0.2, 0);
+      // Play celebration sequence: 3 ascending beeps
+      playBeep(600, 0.2, 0);
       playBeep(800, 0.2, 300);
-      playBeep(800, 0.4, 600);
+      playBeep(1000, 0.4, 600);
     } catch (error) {
       console.warn('Could not play alert sound:', error);
-      
       // Fallback: try to use a simple beep
       try {
         const audio = new Audio("data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSMFL4nS8N2QQAoUXrTp66hVFApGn+DyvmwhCz1+1O/TgjAN");
@@ -102,7 +101,7 @@ export const TimerProvider = ({ children }) => {
     setRecipeName(recipe);
     setRecipeData(recipeObj);
     setCookingModeCallback(() => openCallback);
-    
+
     // Request notification permission if needed
     if ('Notification' in window && Notification.permission === 'default') {
       Notification.requestPermission();
@@ -114,7 +113,9 @@ export const TimerProvider = ({ children }) => {
   };
 
   const resumeTimer = () => {
-    setIsRunning(true);
+    if (timeLeft > 0) { // Only resume if there's time left
+      setIsRunning(true);
+    }
   };
 
   const stopTimer = () => {
@@ -136,7 +137,7 @@ export const TimerProvider = ({ children }) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
       return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
     }
