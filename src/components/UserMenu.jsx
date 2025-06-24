@@ -14,23 +14,16 @@ const UserMenu = () => {
   const handleSignOut = async () => {
     if (isSigningOut) return // Prevent multiple clicks
     
+    console.log('🔄 User menu: Sign out clicked')
     setIsSigningOut(true)
     setIsOpen(false)
     
     try {
-      console.log('🔄 User menu: Starting sign out...')
-      const result = await signOut()
-      
-      if (result.success) {
-        console.log('✅ User menu: Sign out successful')
-      } else {
-        console.error('❌ User menu: Sign out failed:', result.error)
-      }
+      await signOut()
     } catch (error) {
-      console.error('❌ User menu: Sign out error:', error)
-    } finally {
-      setIsSigningOut(false)
+      console.error('❌ User menu sign out error:', error)
     }
+    // Don't reset isSigningOut here as we're redirecting
   }
 
   if (!user) return null
@@ -75,7 +68,7 @@ const UserMenu = () => {
       </motion.button>
 
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && !isSigningOut && (
           <>
             {/* Backdrop */}
             <div 
@@ -122,8 +115,7 @@ const UserMenu = () => {
                     setIsOpen(false)
                     // TODO: Open profile modal
                   }}
-                  disabled={isSigningOut}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
                 >
                   <SafeIcon icon={FiUser} className="w-5 h-5 text-gray-500" />
                   <span className="text-gray-700">Profile Settings</span>
@@ -134,8 +126,7 @@ const UserMenu = () => {
                     setIsOpen(false)
                     // TODO: Open preferences modal
                   }}
-                  disabled={isSigningOut}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors disabled:opacity-50"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-gray-50 transition-colors"
                 >
                   <SafeIcon icon={FiSettings} className="w-5 h-5 text-gray-500" />
                   <span className="text-gray-700">Preferences</span>
@@ -145,22 +136,28 @@ const UserMenu = () => {
 
                 <button
                   onClick={handleSignOut}
-                  disabled={isSigningOut}
-                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-red-50 transition-colors text-red-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center space-x-3 px-4 py-3 text-left hover:bg-red-50 transition-colors text-red-600"
                 >
-                  <SafeIcon 
-                    icon={FiLogOut} 
-                    className={`w-5 h-5 ${isSigningOut ? 'animate-spin' : ''}`} 
-                  />
-                  <span>
-                    {isSigningOut ? 'Signing out...' : 'Sign Out'}
-                  </span>
+                  <SafeIcon icon={FiLogOut} className="w-5 h-5" />
+                  <span>Sign Out</span>
                 </button>
               </div>
             </motion.div>
           </>
         )}
       </AnimatePresence>
+
+      {/* Sign Out Overlay */}
+      {isSigningOut && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl">
+            <div className="flex items-center space-x-4">
+              <div className="w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full animate-spin"></div>
+              <span className="text-lg font-medium text-gray-900">Signing out...</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }

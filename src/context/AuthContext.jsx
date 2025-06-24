@@ -46,21 +46,28 @@ export const AuthProvider = ({ children }) => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
+        console.log('🔄 Auth state change:', event, session?.user?.email || 'No user')
+        
         if (mounted) {
-          console.log('Auth state changed:', event, session?.user?.email)
           setSession(session)
           setUser(session?.user ?? null)
           setLoading(false)
 
           // Handle new user registration
           if (event === 'SIGNED_IN' && session?.user) {
+            console.log('✅ User signed in:', session.user.email)
             await handleUserSignIn(session.user)
           }
 
           // Handle sign out
           if (event === 'SIGNED_OUT') {
-            console.log('User signed out, clearing local data')
+            console.log('🚪 User signed out - clearing data')
             clearLocalData()
+            // Force redirect to landing page
+            if (window.location.hash !== '#/landing') {
+              window.location.hash = '#/landing'
+              window.location.reload()
+            }
           }
         }
       }
@@ -74,32 +81,48 @@ export const AuthProvider = ({ children }) => {
 
   const clearLocalData = () => {
     try {
-      // Clear all meal planner related localStorage data
+      console.log('🧹 Clearing local data...')
+      
+      // Clear all possible localStorage keys
       const keysToRemove = [
         'mealPlannerRecipes',
         'mealPlannerMealPlans',
         'supabase.auth.token',
-        'sb-labsvtcxahdfzeqmnnyz-auth-token'
+        'sb-labsvtcxahdfzeqmnnyz-auth-token',
+        'supabase.session',
+        'sb-session'
       ]
       
+      // Clear localStorage
       keysToRemove.forEach(key => {
         try {
           localStorage.removeItem(key)
         } catch (e) {
-          console.warn(`Error removing ${key} from localStorage:`, e)
+          console.warn(`Error removing ${key}:`, e)
         }
       })
 
-      // Clear sessionStorage as well
+      // Clear all localStorage items that start with 'sb-'
+      Object.keys(localStorage).forEach(key => {
+        if (key.startsWith('sb-') || key.includes('supabase')) {
+          try {
+            localStorage.removeItem(key)
+          } catch (e) {
+            console.warn(`Error removing ${key}:`, e)
+          }
+        }
+      })
+
+      // Clear sessionStorage
       try {
         sessionStorage.clear()
       } catch (e) {
         console.warn('Error clearing sessionStorage:', e)
       }
 
-      console.log('✅ Local data cleared successfully')
+      console.log('✅ Local data cleared')
     } catch (error) {
-      console.error('Error clearing local data:', error)
+      console.error('❌ Error clearing local data:', error)
     }
   }
 
@@ -205,44 +228,42 @@ export const AuthProvider = ({ children }) => {
   }
 
   const signOut = async () => {
+    console.log('🚪 Sign out initiated...')
+    
     try {
-      console.log('🔄 Starting sign out process...')
+      // Clear local state immediately
+      setUser(null)
+      setSession(null)
       
-      // Clear local data first
+      // Clear local data
       clearLocalData()
       
-      // Sign out from Supabase
+      // Sign out from Supabase (this will trigger the auth state change)
       const { error } = await supabase.auth.signOut()
       
       if (error) {
         console.error('Supabase sign out error:', error)
-        throw error
+        // Continue with local sign out even if Supabase fails
       }
 
-      // Force clear the state immediately
-      setUser(null)
-      setSession(null)
+      console.log('✅ Sign out process completed')
       
-      console.log('✅ Sign out successful')
-      
-      // Force a page reload to ensure clean state
-      setTimeout(() => {
-        window.location.href = '/landing'
-      }, 100)
+      // Force immediate redirect
+      window.location.hash = '#/landing'
+      window.location.reload()
       
       return { success: true }
     } catch (error) {
-      console.error('Sign out error:', error)
+      console.error('❌ Sign out error:', error)
       
-      // Even if there's an error, try to clear local state
+      // Force local sign out even on error
       setUser(null)
       setSession(null)
       clearLocalData()
       
-      // Still redirect to landing page
-      setTimeout(() => {
-        window.location.href = '/landing'
-      }, 100)
+      // Still redirect
+      window.location.hash = '#/landing'
+      window.location.reload()
       
       return { success: false, error: error.message }
     }

@@ -13,8 +13,15 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
-    flowType: 'pkce'
+    flowType: 'pkce',
+    storage: window.localStorage,
+    storageKey: 'sb-labsvtcxahdfzeqmnnyz-auth-token'
   }
+})
+
+// Add debug logging for auth events
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('🔐 Supabase auth event:', event, session?.user?.email || 'No user')
 })
 
 // Simple connection test
