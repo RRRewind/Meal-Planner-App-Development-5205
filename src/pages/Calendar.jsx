@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { format, addDays, startOfWeek, isSameDay, addWeeks, subWeeks, isPast, startOfDay, isToday } from 'date-fns';
+import { format, addDays, startOfWeek, isSameDay, addWeeks, subWeeks, isPast, startOfDay, isToday, isBefore } from 'date-fns';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useMealPlan } from '../context/MealPlanContext';
@@ -21,6 +21,7 @@ const Calendar = () => {
   // Get current date in user's timezone
   const now = new Date();
   const today = startOfDay(now);
+  const currentWeekStart = startOfWeek(today, { weekStartsOn: 1 });
 
   const mealTypes = [
     { key: 'breakfast', label: 'Breakfast', icon: FiCoffee, color: 'from-yellow-400 to-orange-500' },
@@ -29,8 +30,18 @@ const Calendar = () => {
     { key: 'snacks', label: 'Snacks', icon: FiMoreHorizontal, color: 'from-green-400 to-emerald-500' }
   ];
 
+  // Check if we can navigate to previous week
+  const canGoToPreviousWeek = () => {
+    const previousWeek = subWeeks(currentWeek, 1);
+    // Allow going back only if the previous week is not entirely in the past
+    // (i.e., if the previous week contains today or future dates)
+    return !isBefore(addDays(previousWeek, 6), today);
+  };
+
   const handlePrevWeek = () => {
-    setCurrentWeek(subWeeks(currentWeek, 1));
+    if (canGoToPreviousWeek()) {
+      setCurrentWeek(subWeeks(currentWeek, 1));
+    }
   };
 
   const handleNextWeek = () => {
@@ -89,12 +100,20 @@ const Calendar = () => {
 
         <div className="flex items-center space-x-4">
           <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
+            whileHover={canGoToPreviousWeek() ? { scale: 1.1 } : {}}
+            whileTap={canGoToPreviousWeek() ? { scale: 0.9 } : {}}
             onClick={handlePrevWeek}
-            className="p-2 bg-white rounded-xl shadow-lg border border-orange-100 hover:bg-orange-50 transition-colors"
+            disabled={!canGoToPreviousWeek()}
+            className={`p-2 rounded-xl shadow-lg border border-orange-100 transition-colors ${
+              canGoToPreviousWeek() 
+                ? 'bg-white hover:bg-orange-50 cursor-pointer' 
+                : 'bg-gray-100 cursor-not-allowed opacity-50'
+            }`}
           >
-            <SafeIcon icon={FiChevronLeft} className="w-5 h-5 text-gray-600" />
+            <SafeIcon 
+              icon={FiChevronLeft} 
+              className={`w-5 h-5 ${canGoToPreviousWeek() ? 'text-gray-600' : 'text-gray-400'}`} 
+            />
           </motion.button>
 
           <div className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
@@ -111,6 +130,20 @@ const Calendar = () => {
           </motion.button>
         </div>
       </motion.div>
+
+      {/* Navigation Hint for Disabled Previous Button */}
+      {!canGoToPreviousWeek() && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-4 p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-center space-x-2"
+        >
+          <SafeIcon icon={FiClock} className="w-4 h-4 text-amber-600" />
+          <p className="text-sm text-amber-800">
+            You can only view the current week and future weeks for meal planning.
+          </p>
+        </motion.div>
+      )}
 
       {/* Calendar Grid */}
       <motion.div
