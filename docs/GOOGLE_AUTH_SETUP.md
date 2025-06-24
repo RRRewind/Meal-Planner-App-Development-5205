@@ -107,6 +107,7 @@ Authorized redirect URIs:
 
 ❌ http://localhost:5173 (REMOVE THIS)
 ❌ http://localhost:5173/auth/callback (REMOVE THIS)
+❌ http://localhost:3000 (REMOVE THIS)
 ```
 
 ## 🧪 Step 6: Test Configuration
@@ -168,3 +169,19 @@ https://labsvtcxahdfzeqmnnyz.supabase.co/auth/v1/callback
 5. **Test again on deployed app**
 
 The error should be resolved immediately after removing localhost URLs from your Google OAuth configuration.
+
+## 🛠️ Additional Configuration for HashRouter
+
+Since this app uses HashRouter, make sure your redirect URLs include the hash:
+
+**Supabase Site URL:**
+```
+https://your-domain.com/#/
+```
+
+**Additional Redirect URLs:**
+```
+https://your-domain.com/#/**
+```
+
+This ensures proper routing after OAuth callback.

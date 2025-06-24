@@ -23,6 +23,42 @@ const LoadingScreen = () => (
   </div>
 );
 
+// OAuth Callback Handler
+const OAuthCallbackHandler = ({ children }) => {
+  useEffect(() => {
+    // Handle OAuth callback URL cleanup
+    const handleOAuthCallback = () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      
+      // Check for OAuth parameters
+      const hasOAuthParams = urlParams.has('code') || 
+                            urlParams.has('access_token') || 
+                            hashParams.has('access_token') ||
+                            urlParams.has('error');
+      
+      if (hasOAuthParams) {
+        console.log('🔗 OAuth callback detected, cleaning URL...');
+        
+        // Clean up the URL
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl + '#/');
+        
+        // Small delay to allow auth state to update
+        setTimeout(() => {
+          if (window.location.hash !== '#/') {
+            window.location.hash = '#/';
+          }
+        }, 100);
+      }
+    };
+
+    handleOAuthCallback();
+  }, []);
+
+  return children;
+};
+
 // App Routes Component
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -118,7 +154,9 @@ function App() {
     <AuthProvider>
       <MealPlanProvider>
         <Router>
-          <AppRoutes />
+          <OAuthCallbackHandler>
+            <AppRoutes />
+          </OAuthCallbackHandler>
         </Router>
       </MealPlanProvider>
     </AuthProvider>

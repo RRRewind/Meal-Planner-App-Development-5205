@@ -57,6 +57,11 @@ export const AuthProvider = ({ children }) => {
           if (event === 'SIGNED_IN' && session?.user) {
             console.log('✅ User signed in:', session.user.email)
             await handleUserSignIn(session.user)
+            
+            // Clean up URL after OAuth callback
+            if (window.location.search.includes('code=') || window.location.search.includes('access_token=')) {
+              window.history.replaceState({}, document.title, window.location.pathname + window.location.hash)
+            }
           }
 
           // Handle sign out
@@ -165,12 +170,26 @@ export const AuthProvider = ({ children }) => {
     }
   }
 
+  // Get the correct redirect URL based on environment
+  const getRedirectUrl = () => {
+    // Check if we're in development
+    if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+      return `${window.location.origin}/#/`
+    }
+    
+    // For production, use the actual domain
+    return `${window.location.origin}/#/`
+  }
+
   const signInWithGoogle = async () => {
     try {
+      const redirectUrl = getRedirectUrl()
+      console.log('🔗 Google OAuth redirect URL:', redirectUrl)
+      
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}`,
+          redirectTo: redirectUrl,
           queryParams: {
             access_type: 'offline',
             prompt: 'consent',
@@ -185,7 +204,7 @@ export const AuthProvider = ({ children }) => {
       console.error('Google sign in error:', error)
       return { 
         success: false, 
-        error: error.message || 'Google authentication is not properly configured. Please use email authentication.' 
+        error: error.message || 'Google authentication failed. Please check your configuration or use email authentication.' 
       }
     }
   }
