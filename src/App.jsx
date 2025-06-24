@@ -26,12 +26,10 @@ const LoadingScreen = () => (
 // OAuth Callback Handler
 const OAuthCallbackHandler = ({ children }) => {
   useEffect(() => {
-    // Handle OAuth callback URL cleanup
     const handleOAuthCallback = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
 
-      // Check for OAuth parameters
       const hasOAuthParams = urlParams.has('code') || 
                             urlParams.has('access_token') || 
                             hashParams.has('access_token') || 
@@ -39,11 +37,9 @@ const OAuthCallbackHandler = ({ children }) => {
 
       if (hasOAuthParams) {
         console.log('🔗 OAuth callback detected, cleaning URL...');
-        // Clean up the URL
         const cleanUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl + '#/');
         
-        // Small delay to allow auth state to update
         setTimeout(() => {
           if (window.location.hash !== '#/') {
             window.location.hash = '#/';
@@ -75,22 +71,16 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-// Mobile-optimized page transitions
+// CRITICAL: Completely disable animations on mobile
 const getMobileTransition = (isMobile) => {
   if (isMobile) {
-    // Simplified transitions for mobile
+    // NO ANIMATIONS ON MOBILE - return static props
     return {
-      initial: { opacity: 0 },
-      animate: { opacity: 1 },
-      exit: { opacity: 0 },
-      transition: { 
-        duration: 0.15, 
-        ease: 'easeOut' 
-      }
+      // Remove all motion properties
     };
   }
   
-  // Full transitions for desktop
+  // Full transitions for desktop only
   return {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
@@ -103,6 +93,14 @@ const getMobileTransition = (isMobile) => {
   };
 };
 
+// Static wrapper for mobile (no motion)
+const StaticWrapper = ({ children, isMobile }) => {
+  if (isMobile) {
+    return <div className="mobile-static mobile-no-motion">{children}</div>;
+  }
+  return children;
+};
+
 // App Routes Component
 const AppRoutes = () => {
   const { user, loading } = useAuth();
@@ -112,27 +110,44 @@ const AppRoutes = () => {
     return <LoadingScreen />;
   }
 
-  // If user is not authenticated, show landing page for root route
+  // If user is not authenticated, show landing page
   if (!user) {
     return (
-      <LazyMotion features={domAnimation}>
-        <MotionConfig reducedMotion={isMobile ? "always" : "user"}>
-          <Routes>
-            <Route path="/landing" element={<Landing />} />
-            <Route path="/*" element={<Navigate to="/landing" replace />} />
-          </Routes>
-        </MotionConfig>
-      </LazyMotion>
+      <StaticWrapper isMobile={isMobile}>
+        <Routes>
+          <Route path="/landing" element={<Landing />} />
+          <Route path="/*" element={<Navigate to="/landing" replace />} />
+        </Routes>
+      </StaticWrapper>
     );
   }
 
   // Get transition config based on device
   const pageTransition = getMobileTransition(isMobile);
 
-  // If user is authenticated, show the main app
+  // Mobile: Static rendering without animations
+  if (isMobile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 mobile-static">
+        <Navigation />
+        <main className="pt-20 pb-8">
+          <Routes>
+            <Route path="/landing" element={<Navigate to="/" replace />} />
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/recipes" element={<Recipes />} />
+            <Route path="/calendar" element={<Calendar />} />
+            <Route path="/shopping" element={<ShoppingList />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </main>
+      </div>
+    );
+  }
+
+  // Desktop: Full animations
   return (
     <LazyMotion features={domAnimation}>
-      <MotionConfig reducedMotion={isMobile ? "always" : "user"}>
+      <MotionConfig reducedMotion="never">
         <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 vercel-optimized">
           <Navigation />
           <main className="pt-20 pb-8">

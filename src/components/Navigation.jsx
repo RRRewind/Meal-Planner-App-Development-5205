@@ -13,6 +13,15 @@ const Navigation = () => {
   const location = useLocation();
   const { user, loading } = useAuth();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   const navItems = [
     { path: '/', icon: FiHome, label: 'Dashboard' },
@@ -21,6 +30,43 @@ const Navigation = () => {
     { path: '/shopping', icon: FiShoppingCart, label: 'Shopping' }
   ];
 
+  // Static components for mobile
+  const StaticButton = ({ children, className, onClick, ...props }) => {
+    if (isMobile) {
+      return (
+        <button className={`${className} mobile-static`} onClick={onClick} {...props}>
+          {children}
+        </button>
+      );
+    }
+    return (
+      <motion.button
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.95 }}
+        className={className}
+        onClick={onClick}
+        {...props}
+      >
+        {children}
+      </motion.button>
+    );
+  };
+
+  const StaticDiv = ({ children, className, ...props }) => {
+    if (isMobile) {
+      return <div className={`${className} mobile-static`} {...props}>{children}</div>;
+    }
+    return (
+      <motion.div
+        whileHover={{ rotate: 5, scale: 1.05 }}
+        className={className}
+        {...props}
+      >
+        {children}
+      </motion.div>
+    );
+  };
+
   return (
     <>
       <nav className="fixed top-0 left-0 right-0 bg-white/90 backdrop-blur-md border-b border-orange-100 z-50">
@@ -28,14 +74,11 @@ const Navigation = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 group">
-              <motion.div
-                whileHover={{ rotate: 5, scale: 1.05 }}
-                className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center"
-              >
+              <StaticDiv className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
                 <SafeIcon icon={FiIcons.FiCoffee} className="w-5 h-5 text-white" />
-              </motion.div>
+              </StaticDiv>
               <div className="flex flex-col">
-                <span className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent leading-none">
+                <span className="text-xl font-bold gradient-text-stable leading-none">
                   Meal Plan
                 </span>
                 <span className="text-xs text-gray-500 leading-none">
@@ -50,9 +93,7 @@ const Navigation = () => {
                 const isActive = location.pathname === item.path;
                 return (
                   <Link key={item.path} to={item.path} className="relative">
-                    <motion.div
-                      whileHover={{ scale: 1.05 }}
-                      whileTap={{ scale: 0.95 }}
+                    <StaticDiv
                       className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                         isActive
                           ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
@@ -61,8 +102,8 @@ const Navigation = () => {
                     >
                       <SafeIcon icon={item.icon} className="w-5 h-5" />
                       <span className="font-medium hidden sm:block">{item.label}</span>
-                    </motion.div>
-                    {isActive && (
+                    </StaticDiv>
+                    {!isMobile && isActive && (
                       <motion.div
                         layoutId="activeTab"
                         className="absolute inset-0 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg -z-10"
@@ -78,19 +119,17 @@ const Navigation = () => {
             {/* Auth Section */}
             <div className="flex items-center space-x-3">
               {loading ? (
-                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
+                <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
               ) : user ? (
                 <UserMenu />
               ) : (
-                <motion.button
-                  whileHover={{ scale: 1.05 }}
-                  whileTap={{ scale: 0.95 }}
+                <StaticButton
                   onClick={() => setShowAuthModal(true)}
                   className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
                 >
                   <SafeIcon icon={FiLogIn} className="w-4 h-4" />
                   <span className="hidden sm:inline">Sign In</span>
-                </motion.button>
+                </StaticButton>
               )}
             </div>
           </div>
@@ -98,14 +137,24 @@ const Navigation = () => {
       </nav>
 
       {/* Auth Modal */}
-      <AnimatePresence>
-        {showAuthModal && (
-          <AuthModal
-            isOpen={showAuthModal}
-            onClose={() => setShowAuthModal(false)}
-          />
-        )}
-      </AnimatePresence>
+      {!isMobile && (
+        <AnimatePresence>
+          {showAuthModal && (
+            <AuthModal
+              isOpen={showAuthModal}
+              onClose={() => setShowAuthModal(false)}
+            />
+          )}
+        </AnimatePresence>
+      )}
+      
+      {/* Static modal for mobile */}
+      {isMobile && showAuthModal && (
+        <AuthModal
+          isOpen={showAuthModal}
+          onClose={() => setShowAuthModal(false)}
+        />
+      )}
     </>
   );
 };
