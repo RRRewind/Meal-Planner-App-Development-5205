@@ -39,21 +39,46 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
   const filteredRecipes = recipes.filter(recipe => {
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = selectedCategory === 'all' || recipe.category.toLowerCase() === selectedCategory.toLowerCase();
+    const matchesCategory = selectedCategory === 'all' || 
+                           recipe.category.toLowerCase() === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
   const categories = ['all', ...new Set(recipes.map(recipe => recipe.category))];
 
   const handleAddRecipe = (recipe) => {
-    addMealToPlan(date, mealType, recipe);
-    if (mealType !== 'snacks') {
-      onClose();
+    console.log('🍽️ Adding recipe to meal plan:', {
+      date: dateKey,
+      mealType,
+      recipe: recipe.title
+    });
+    
+    try {
+      addMealToPlan(date, mealType, recipe);
+      console.log('✅ Recipe added successfully');
+      
+      // For non-snacks, close the modal after adding
+      if (mealType !== 'snacks') {
+        onClose();
+      }
+    } catch (error) {
+      console.error('❌ Error adding recipe to meal plan:', error);
     }
   };
 
   const handleRemoveRecipe = (recipeId = null) => {
-    removeMealFromPlan(date, mealType, recipeId);
+    console.log('🗑️ Removing recipe from meal plan:', {
+      date: dateKey,
+      mealType,
+      recipeId
+    });
+    
+    try {
+      removeMealFromPlan(date, mealType, recipeId);
+      console.log('✅ Recipe removed successfully');
+    } catch (error) {
+      console.error('❌ Error removing recipe from meal plan:', error);
+    }
   };
 
   return (
@@ -207,7 +232,7 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                           {recipe.category}
                         </span>
                       </div>
-                      
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-600">
                           <div className="flex items-center space-x-1">
@@ -219,7 +244,7 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                             <span>{recipe.servings}</span>
                           </div>
                         </div>
-                        
+
                         <motion.button
                           whileHover={{ scale: 1.05 }}
                           whileTap={{ scale: 0.95 }}
@@ -240,7 +265,7 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No recipes found</h3>
                 <p className="text-gray-600">
                   {recipes.length === 0 
-                    ? 'Add some recipes first to start planning meals'
+                    ? 'Add some recipes first to start planning meals' 
                     : 'Try adjusting your search or filter criteria'
                   }
                 </p>
