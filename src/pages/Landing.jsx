@@ -83,7 +83,7 @@ const Landing = () => {
                 <SafeIcon icon={FiIcons.FiCoffee} className="w-5 h-5 text-white" />
               </motion.div>
               <div className="flex flex-col">
-                <span className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent leading-none">
+                <span className="text-xl font-bold gradient-text-stable leading-none">
                   Meal Plan
                 </span>
                 <span className="text-xs text-gray-500 leading-none">
@@ -124,16 +124,16 @@ const Landing = () => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-6">
+              <h1 className="text-5xl md:text-7xl font-bold gradient-text-stable mb-6">
                 Plan Your Perfect Week
               </h1>
               <p className="text-xl md:text-2xl text-gray-600 mb-8 max-w-3xl mx-auto leading-relaxed">
                 Transform your meal planning with our intuitive app. Organize recipes, plan meals, and generate smart shopping lists - all in one place.
               </p>
             </motion.div>
-
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
+            
+            <motion.div 
+              initial={{ opacity: 0, y: 30 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.2 }}
               className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16"
@@ -158,17 +158,17 @@ const Landing = () => {
             </motion.div>
 
             {/* Hero Image/Illustration */}
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
+            <motion.div 
+              initial={{ opacity: 0, y: 40 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8, delay: 0.4 }}
               className="relative max-w-4xl mx-auto"
             >
               <div className="bg-white rounded-3xl shadow-2xl p-8 border border-orange-100">
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   {features.map((feature, index) => (
-                    <motion.div
-                      key={feature.title}
+                    <motion.div 
+                      key={feature.title} 
                       initial={{ opacity: 0, y: 20 }}
                       animate={{ opacity: 1, y: 0 }}
                       transition={{ duration: 0.6, delay: 0.6 + index * 0.1 }}
@@ -191,9 +191,10 @@ const Landing = () => {
       {/* Features Section */}
       <section className="py-20 bg-white">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
@@ -208,17 +209,19 @@ const Landing = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
             {/* Benefits List */}
             <motion.div
-              initial={{ opacity: 0, x: -20 }}
+              initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
               <h3 className="text-3xl font-bold text-gray-900 mb-8">Why Choose Our Meal Planner?</h3>
               <div className="space-y-4">
                 {benefits.map((benefit, index) => (
-                  <motion.div
-                    key={benefit}
+                  <motion.div 
+                    key={benefit} 
                     initial={{ opacity: 0, x: -20 }}
                     whileInView={{ opacity: 1, x: 0 }}
+                    viewport={{ once: true }}
                     transition={{ duration: 0.6, delay: index * 0.1 }}
                     className="flex items-center space-x-3"
                   >
@@ -232,18 +235,21 @@ const Landing = () => {
             </motion.div>
 
             {/* Feature Cards */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
+            <motion.div 
+              initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
               transition={{ duration: 0.8 }}
               className="space-y-6"
             >
               {features.map((feature, index) => (
-                <motion.div
+                <motion.div 
                   key={feature.title}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.6, delay: index * 0.2 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.6, delay: index * 0.1 }}
+                  whileHover={{ scale: 1.02 }}
                   className="bg-gradient-to-r from-gray-50 to-orange-50 p-6 rounded-2xl border border-orange-100"
                 >
                   <div className="flex items-start space-x-4">
@@ -265,9 +271,10 @@ const Landing = () => {
       {/* Testimonials Section */}
       <section className="py-20 bg-gradient-to-r from-orange-50 to-red-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <motion.div
+          <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.8 }}
             className="text-center mb-16"
           >
@@ -281,11 +288,13 @@ const Landing = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <motion.div
+              <motion.div 
                 key={testimonial.name}
-                initial={{ opacity: 0, y: 20 }}
+                initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.6, delay: index * 0.2 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.6, delay: index * 0.1 }}
+                whileHover={{ y: -5 }}
                 className="bg-white p-6 rounded-2xl shadow-lg border border-orange-100"
               >
                 <div className="flex items-center mb-4">
@@ -315,8 +324,9 @@ const Landing = () => {
       <section className="py-20 bg-gradient-to-r from-orange-500 to-red-500">
         <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
             <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">

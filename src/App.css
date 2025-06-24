@@ -35,6 +35,92 @@ select:focus {
   outline-offset: 2px;
 }
 
+/* Fix for iOS text rendering and flickering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+/* Prevent iOS text size adjustment */
+html {
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+/* Fix for iOS Safari flickering during scroll */
+body {
+  -webkit-backface-visibility: hidden;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+}
+
+/* Stable gradient text class to prevent flickering */
+.gradient-text-stable {
+  background: linear-gradient(90deg, #ea580c 0%, #dc2626 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Force hardware acceleration to prevent flickering */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* Improve text rendering on iOS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /* Prevent layout shifts */
+  will-change: auto;
+}
+
+/* Prevent webkit transform flickering */
+.bg-clip-text {
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  /* Force hardware acceleration to prevent flickering */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* Improve text rendering on iOS */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Fix for gradient text flickering on iOS */
+.text-transparent {
+  /* Stabilize the gradient text rendering */
+  will-change: auto;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+/* Prevent layout shifts during scroll on mobile */
+@media (max-width: 768px) {
+  * {
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+  }
+  
+  /* Specifically fix gradient text on mobile */
+  .bg-gradient-to-r,
+  .gradient-text-stable {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  /* Optimize motion elements for mobile */
+  .motion-reduce {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 /* Animation utilities */
 .slide-up {
   animation: slideUp 0.3s ease-out;
@@ -61,5 +147,51 @@ select:focus {
   }
   to {
     opacity: 1;
+  }
+}
+
+/* Optimize for iOS Safari */
+@supports (-webkit-touch-callout: none) {
+  /* iOS Safari specific fixes */
+  .bg-clip-text,
+  .gradient-text-stable {
+    /* Force GPU rendering */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    /* Prevent text flickering */
+    -webkit-font-smoothing: subpixel-antialiased;
+    /* Stabilize rendering */
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  /* Fix for gradient backgrounds on iOS */
+  .bg-gradient-to-r,
+  .bg-gradient-to-br {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+  
+  /* Optimize Framer Motion for iOS */
+  [data-framer-name] {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+  }
+}
+
+/* Framer Motion optimization for mobile */
+@media (max-width: 768px) {
+  /* Reduce motion for better performance on mobile */
+  @media (prefers-reduced-motion: no-preference) {
+    .framer-motion-element {
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+    }
   }
 }
