@@ -13,14 +13,12 @@ const Calendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
   const [selectedMealType, setSelectedMealType] = useState(null);
   const [showMealModal, setShowMealModal] = useState(false);
-  const [hoveredMeal, setHoveredMeal] = useState(null);
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [isDateSticky, setIsDateSticky] = useState(false);
 
   const weekMeals = getWeekMeals(currentWeek);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i));
-
   const now = new Date();
   const today = startOfDay(now);
 
@@ -48,7 +46,6 @@ const Calendar = () => {
   // Handle scroll for sticky date on mobile
   useEffect(() => {
     if (!isMobile) return;
-
     const handleScroll = () => {
       const dateElement = document.getElementById('mobile-date-header');
       if (dateElement) {
@@ -56,7 +53,6 @@ const Calendar = () => {
         setIsDateSticky(dateRect.bottom < 80);
       }
     };
-
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isMobile, currentDayIndex]);
@@ -73,47 +69,21 @@ const Calendar = () => {
     if (isMobile) {
       switch (type) {
         case 'button':
-          return {
-            whileTap: { scale: 0.98 },
-            transition: { duration: 0.1 }
-          };
+          return { whileTap: { scale: 0.98 }, transition: { duration: 0.1 } };
         case 'card':
-          return {
-            initial: { opacity: 0 },
-            animate: { opacity: 1 },
-            transition: { duration: 0.2 }
-          };
+          return { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.2 } };
         default:
-          return {
-            initial: { opacity: 0 },
-            animate: { opacity: 1 },
-            transition: { duration: 0.15 }
-          };
+          return { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { duration: 0.15 } };
       }
     }
-    
     // Full animations for desktop
     switch (type) {
       case 'button':
-        return {
-          whileHover: { scale: 1.05 },
-          whileTap: { scale: 0.95 },
-          transition: { duration: 0.15 }
-        };
+        return { whileHover: { scale: 1.05 }, whileTap: { scale: 0.95 }, transition: { duration: 0.15 } };
       case 'card':
-        return {
-          initial: { opacity: 0, y: 20 },
-          animate: { opacity: 1, y: 0 },
-          exit: { opacity: 0, y: -20 },
-          transition: { duration: 0.3 }
-        };
+        return { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 }, transition: { duration: 0.3 } };
       default:
-        return {
-          initial: { opacity: 0, y: 20 },
-          animate: { opacity: 1, y: 0 },
-          exit: { opacity: 0, y: -20 },
-          transition: { duration: 0.2 }
-        };
+        return { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, exit: { opacity: 0, y: -20 }, transition: { duration: 0.2 } };
     }
   };
 
@@ -223,59 +193,37 @@ const Calendar = () => {
         {/* Mobile Header */}
         <motion.div {...getMotionProps()} className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-3xl font-bold gradient-text-stable mb-1">
-              Meal Calendar
-            </h1>
+            <h1 className="text-3xl font-bold gradient-text-stable mb-1">Meal Calendar</h1>
             <p className="text-gray-600 text-sm">Tap arrows to navigate</p>
           </div>
           <SafeIcon icon={FiCalendar} className="w-8 h-8 text-orange-500" />
         </motion.div>
 
         {/* Mobile Date Navigation */}
-        <motion.div
-          {...getMotionProps('card')}
-          id="mobile-date-header"
-          className="bg-white rounded-2xl shadow-lg border border-orange-100 p-4 mb-6"
-        >
+        <motion.div {...getMotionProps('card')} id="mobile-date-header" className="bg-white rounded-2xl shadow-lg border border-orange-100 p-4 mb-6">
           <div className="flex items-center justify-between">
             <motion.button
               {...getMotionProps('button')}
               onClick={handlePrevDay}
               disabled={!canGoToPreviousDay()}
-              className={`p-3 rounded-xl transition-colors mobile-static ${
-                canGoToPreviousDay()
-                  ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 active:bg-orange-200'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
+              className={`p-3 rounded-xl transition-colors mobile-static ${canGoToPreviousDay() ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 active:bg-orange-200' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
             >
               <SafeIcon icon={FiChevronLeft} className="w-5 h-5" />
             </motion.button>
-
             <div className="text-center">
-              <div className={`text-xl font-bold ${
-                dateStatus === 'today' ? 'text-orange-600' : 'text-gray-900'
-              }`}>
+              <div className={`text-xl font-bold ${dateStatus === 'today' ? 'text-orange-600' : 'text-gray-900'}`}>
                 {format(currentDay, 'EEEE')}
                 {dateStatus === 'today' && (
-                  <span className="ml-2 text-sm bg-orange-100 text-orange-600 px-2 py-1 rounded-full">
-                    Today
-                  </span>
+                  <span className="ml-2 text-sm bg-orange-100 text-orange-600 px-2 py-1 rounded-full">Today</span>
                 )}
               </div>
-              <div className="text-2xl font-bold text-gray-900 mt-1">
-                {format(currentDay, 'MMMM d, yyyy')}
-              </div>
+              <div className="text-2xl font-bold text-gray-900 mt-1">{format(currentDay, 'MMMM d, yyyy')}</div>
             </div>
-
             <motion.button
               {...getMotionProps('button')}
               onClick={handleNextDay}
               disabled={!canGoToNextDay()}
-              className={`p-3 rounded-xl transition-colors mobile-static ${
-                canGoToNextDay()
-                  ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 active:bg-orange-200'
-                  : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-              }`}
+              className={`p-3 rounded-xl transition-colors mobile-static ${canGoToNextDay() ? 'bg-orange-50 hover:bg-orange-100 text-orange-600 active:bg-orange-200' : 'bg-gray-100 text-gray-400 cursor-not-allowed'}`}
             >
               <SafeIcon icon={FiChevronRight} className="w-5 h-5" />
             </motion.button>
@@ -286,14 +234,10 @@ const Calendar = () => {
         {isDateSticky && (
           <div className="fixed top-16 left-0 right-0 bg-white/95 backdrop-blur-md border-b border-orange-100 z-40 py-3 px-4">
             <div className="text-center">
-              <div className={`text-lg font-bold ${
-                dateStatus === 'today' ? 'text-orange-600' : 'text-gray-900'
-              }`}>
+              <div className={`text-lg font-bold ${dateStatus === 'today' ? 'text-orange-600' : 'text-gray-900'}`}>
                 {format(currentDay, 'EEEE, MMMM d')}
                 {dateStatus === 'today' && (
-                  <span className="ml-2 text-sm bg-orange-100 text-orange-600 px-2 py-1 rounded-full">
-                    Today
-                  </span>
+                  <span className="ml-2 text-sm bg-orange-100 text-orange-600 px-2 py-1 rounded-full">Today</span>
                 )}
               </div>
             </div>
@@ -301,10 +245,7 @@ const Calendar = () => {
         )}
 
         {/* Mobile Meals List */}
-        <div
-          className="space-y-4"
-          style={{ paddingTop: isDateSticky ? '60px' : '0' }}
-        >
+        <div className="space-y-4" style={{ paddingTop: isDateSticky ? '60px' : '0' }}>
           {mealTypes.map((mealType, index) => {
             const meal = dayMeals?.[mealType.key];
             return (
@@ -334,12 +275,8 @@ const Calendar = () => {
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
-                              <div className="font-semibold text-green-800 mb-1">
-                                {snack.title}
-                              </div>
-                              <div className="text-sm text-green-600">
-                                {snack.prepTime} minutes • {snack.servings} servings
-                              </div>
+                              <div className="font-semibold text-green-800 mb-1">{snack.title}</div>
+                              <div className="text-sm text-green-600">{snack.prepTime} minutes • {snack.servings} servings</div>
                             </div>
                             <motion.button
                               {...getMotionProps('button')}
@@ -361,21 +298,15 @@ const Calendar = () => {
                       </motion.button>
                     </div>
                   ) : meal ? (
-                    <motion.div 
+                    <motion.div
                       {...getMotionProps('card')}
                       className="bg-gradient-to-r from-gray-50 to-orange-50 p-4 rounded-xl border border-orange-200 relative"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
-                          <div className="font-semibold text-gray-900 mb-1">
-                            {meal.title}
-                          </div>
-                          <div className="text-sm text-gray-600 mb-2">
-                            {meal.prepTime} minutes • {meal.servings} servings
-                          </div>
-                          <div className="text-sm text-gray-500">
-                            {meal.category}
-                          </div>
+                          <div className="font-semibold text-gray-900 mb-1">{meal.title}</div>
+                          <div className="text-sm text-gray-600 mb-2">{meal.prepTime} minutes • {meal.servings} servings</div>
+                          <div className="text-sm text-gray-500">{meal.category}</div>
                         </div>
                         <motion.button
                           {...getMotionProps('button')}
@@ -403,10 +334,7 @@ const Calendar = () => {
         </div>
 
         {/* Navigation Tips */}
-        <motion.div 
-          {...getMotionProps('card')}
-          className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4"
-        >
+        <motion.div {...getMotionProps('card')} className="mt-6 bg-blue-50 border border-blue-200 rounded-xl p-4">
           <div className="flex items-center space-x-2">
             <SafeIcon icon={FiIcons.FiInfo} className="w-5 h-5 text-blue-600" />
             <div className="text-sm text-blue-800">
@@ -427,32 +355,21 @@ const Calendar = () => {
       {/* Header */}
       <motion.div {...getMotionProps()} className="flex items-center justify-between mb-8">
         <div>
-          <h1 className="text-4xl font-bold gradient-text-stable mb-2">
-            Meal Calendar
-          </h1>
+          <h1 className="text-4xl font-bold gradient-text-stable mb-2">Meal Calendar</h1>
           <p className="text-gray-600">Plan your weekly meals</p>
         </div>
-
         <div className="flex items-center space-x-4">
           <motion.button
             {...getMotionProps('button')}
             onClick={handlePrevWeek}
             disabled={!canGoToPreviousWeek()}
-            className={`p-2 rounded-xl shadow-lg border border-orange-100 transition-colors ${
-              canGoToPreviousWeek()
-                ? 'bg-white hover:bg-orange-50 cursor-pointer'
-                : 'bg-gray-100 cursor-not-allowed opacity-50'
-            }`}
+            className={`p-2 rounded-xl shadow-lg border border-orange-100 transition-colors ${canGoToPreviousWeek() ? 'bg-white hover:bg-orange-50 cursor-pointer' : 'bg-gray-100 cursor-not-allowed opacity-50'}`}
           >
-            <SafeIcon icon={FiChevronLeft} className={`w-5 h-5 ${
-              canGoToPreviousWeek() ? 'text-gray-600' : 'text-gray-400'
-            }`} />
+            <SafeIcon icon={FiChevronLeft} className={`w-5 h-5 ${canGoToPreviousWeek() ? 'text-gray-600' : 'text-gray-400'}`} />
           </motion.button>
-
           <div className="text-lg font-semibold text-gray-900 min-w-[200px] text-center">
             {format(currentWeek, 'MMMM d')} - {format(addDays(currentWeek, 6), 'MMMM d, yyyy')}
           </div>
-
           <motion.button
             {...getMotionProps('button')}
             onClick={handleNextWeek}
@@ -483,22 +400,12 @@ const Calendar = () => {
             return (
               <div
                 key={day.toISOString()}
-                className={`p-4 text-center border-r border-orange-100 last:border-r-0 relative ${
-                  dateStatus === 'past' ? 'opacity-50' : ''
-                }`}
+                className={`p-4 text-center border-r border-orange-100 last:border-r-0 relative ${dateStatus === 'past' ? 'opacity-50' : ''}`}
               >
-                <div className={`font-semibold ${
-                  dateStatus === 'past' ? 'text-gray-400' : 'text-gray-900'
-                }`}>
+                <div className={`font-semibold ${dateStatus === 'past' ? 'text-gray-400' : 'text-gray-900'}`}>
                   {format(day, 'EEE')}
                 </div>
-                <div className={`text-2xl font-bold mt-1 flex items-center justify-center ${
-                  dateStatus === 'today'
-                    ? 'text-orange-600'
-                    : dateStatus === 'past'
-                    ? 'text-gray-400'
-                    : 'text-gray-700'
-                }`}>
+                <div className={`text-2xl font-bold mt-1 flex items-center justify-center ${dateStatus === 'today' ? 'text-orange-600' : dateStatus === 'past' ? 'text-gray-400' : 'text-gray-700'}`}>
                   {format(day, 'd')}
                   {dateStatus === 'today' && (
                     <div className="w-2 h-2 bg-orange-500 rounded-full ml-1"></div>
@@ -515,7 +422,7 @@ const Calendar = () => {
           })}
         </div>
 
-        {/* Meal Rows */}
+        {/* Meal Rows - REMOVED HOVER ANIMATIONS */}
         {mealTypes.map((mealType) => (
           <div key={mealType.key} className="border-t border-gray-100">
             <div className="grid grid-cols-8">
@@ -525,7 +432,6 @@ const Calendar = () => {
                 </div>
                 <span className="font-medium text-gray-900">{mealType.label}</span>
               </div>
-
               {weekDays.map((day) => {
                 const dateKey = format(day, 'yyyy-MM-dd');
                 const dayMeals = weekMeals[dateKey];
@@ -536,44 +442,29 @@ const Calendar = () => {
                 return (
                   <div
                     key={`${dateKey}-${mealType.key}`}
-                    className={`p-2 border-r border-gray-100 last:border-r-0 min-h-[120px] ${
-                      isPastDate ? 'bg-gray-50 opacity-60' : ''
-                    }`}
+                    className={`p-2 border-r border-gray-100 last:border-r-0 min-h-[120px] ${isPastDate ? 'bg-gray-50 opacity-60' : ''}`}
                   >
-                    {/* Desktop meal content */}
+                    {/* Desktop meal content - NO HOVER ANIMATIONS */}
                     {mealType.key === 'snacks' ? (
                       <div className="space-y-2">
                         {meal?.map((snack, index) => (
                           <div
                             key={`${snack.id}-${index}`}
-                            className={`bg-gradient-to-r from-green-50 to-emerald-50 p-2 rounded-lg border border-green-200 group relative ${
-                              isPastDate ? 'opacity-70' : ''
-                            }`}
-                            onMouseEnter={() => !isPastDate && setHoveredMeal(`${dateKey}-${mealType.key}-${index}`)}
-                            onMouseLeave={() => setHoveredMeal(null)}
+                            className={`bg-gradient-to-r from-green-50 to-emerald-50 p-2 rounded-lg border border-green-200 group relative ${isPastDate ? 'opacity-70' : ''}`}
                           >
-                            <div className="text-xs font-medium text-green-800 truncate pr-6">
-                              {snack.title}
-                            </div>
-                            <div className="text-xs text-green-600 mt-1">
-                              {snack.prepTime}m
-                            </div>
-                            <AnimatePresence>
-                              {!isPastDate && hoveredMeal === `${dateKey}-${mealType.key}-${index}` && (
-                                <motion.button
-                                  initial={{ opacity: 0, scale: 0.8 }}
-                                  animate={{ opacity: 1, scale: 1 }}
-                                  exit={{ opacity: 0, scale: 0.8 }}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleRemoveMeal(day, mealType.key, snack.id);
-                                  }}
-                                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
-                                >
-                                  <SafeIcon icon={FiX} className="w-3 h-3" />
-                                </motion.button>
-                              )}
-                            </AnimatePresence>
+                            <div className="text-xs font-medium text-green-800 truncate pr-6">{snack.title}</div>
+                            <div className="text-xs text-green-600 mt-1">{snack.prepTime}m</div>
+                            {!isPastDate && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleRemoveMeal(day, mealType.key, snack.id);
+                                }}
+                                className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors opacity-0 group-hover:opacity-100"
+                              >
+                                <SafeIcon icon={FiX} className="w-3 h-3" />
+                              </button>
+                            )}
                           </div>
                         ))}
                         {!isPastDate && (
@@ -585,44 +476,27 @@ const Calendar = () => {
                           </button>
                         )}
                         {isPastDate && meal?.length === 0 && (
-                          <div className="w-full p-2 text-center text-xs text-gray-400 italic">
-                            No meal planned
-                          </div>
+                          <div className="w-full p-2 text-center text-xs text-gray-400 italic">No meal planned</div>
                         )}
                       </div>
                     ) : meal ? (
                       <div
-                        className={`bg-gradient-to-r ${mealType.color.replace('400', '50').replace('500', '100')} p-3 rounded-lg border border-opacity-50 h-full relative group ${
-                          isPastDate ? 'opacity-70' : ''
-                        }`}
-                        onMouseEnter={() => !isPastDate && setHoveredMeal(`${dateKey}-${mealType.key}`)}
-                        onMouseLeave={() => setHoveredMeal(null)}
+                        className={`bg-gradient-to-r ${mealType.color.replace('400', '50').replace('500', '100')} p-3 rounded-lg border border-opacity-50 h-full relative group ${isPastDate ? 'opacity-70' : ''}`}
                       >
-                        <div className="text-sm font-medium text-gray-800 truncate mb-1 pr-6">
-                          {meal.title}
-                        </div>
-                        <div className="text-xs text-gray-600 mb-2">
-                          {meal.prepTime} min • {meal.servings} servings
-                        </div>
-                        <div className="text-xs text-gray-500 truncate">
-                          {meal.category}
-                        </div>
-                        <AnimatePresence>
-                          {!isPastDate && hoveredMeal === `${dateKey}-${mealType.key}` && (
-                            <motion.button
-                              initial={{ opacity: 0, scale: 0.8 }}
-                              animate={{ opacity: 1, scale: 1 }}
-                              exit={{ opacity: 0, scale: 0.8 }}
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleRemoveMeal(day, mealType.key);
-                              }}
-                              className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
-                            >
-                              <SafeIcon icon={FiX} className="w-3 h-3" />
-                            </motion.button>
-                          )}
-                        </AnimatePresence>
+                        <div className="text-sm font-medium text-gray-800 truncate mb-1 pr-6">{meal.title}</div>
+                        <div className="text-xs text-gray-600 mb-2">{meal.prepTime} min • {meal.servings} servings</div>
+                        <div className="text-xs text-gray-500 truncate">{meal.category}</div>
+                        {!isPastDate && (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleRemoveMeal(day, mealType.key);
+                            }}
+                            className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors opacity-0 group-hover:opacity-100"
+                          >
+                            <SafeIcon icon={FiX} className="w-3 h-3" />
+                          </button>
+                        )}
                       </div>
                     ) : (
                       !isPastDate ? (

@@ -7,8 +7,10 @@ import Dashboard from './pages/Dashboard';
 import Recipes from './pages/Recipes';
 import Calendar from './pages/Calendar';
 import ShoppingList from './pages/ShoppingList';
+import FloatingTimer from './components/FloatingTimer';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { MealPlanProvider } from './context/MealPlanContext';
+import { TimerProvider } from './context/TimerContext';
 import './App.css';
 
 // Loading Component
@@ -29,17 +31,12 @@ const OAuthCallbackHandler = ({ children }) => {
     const handleOAuthCallback = () => {
       const urlParams = new URLSearchParams(window.location.search);
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
-
-      const hasOAuthParams = urlParams.has('code') || 
-                            urlParams.has('access_token') || 
-                            hashParams.has('access_token') || 
-                            urlParams.has('error');
+      const hasOAuthParams = urlParams.has('code') || urlParams.has('access_token') || hashParams.has('access_token') || urlParams.has('error');
 
       if (hasOAuthParams) {
         console.log('🔗 OAuth callback detected, cleaning URL...');
         const cleanUrl = window.location.origin + window.location.pathname;
         window.history.replaceState({}, document.title, cleanUrl + '#/');
-        
         setTimeout(() => {
           if (window.location.hash !== '#/') {
             window.location.hash = '#/';
@@ -62,7 +59,6 @@ const useIsMobile = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
-
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -79,24 +75,15 @@ const getMobileTransition = (isMobile) => {
       initial: { opacity: 0 },
       animate: { opacity: 1 },
       exit: { opacity: 0 },
-      transition: { 
-        duration: 0.15, 
-        ease: 'easeOut',
-        type: 'tween'
-      }
+      transition: { duration: 0.15, ease: 'easeOut', type: 'tween' }
     };
   }
-  
   // Full transitions for desktop
   return {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
     exit: { opacity: 0, y: -10 },
-    transition: { 
-      duration: 0.2, 
-      ease: 'easeOut',
-      type: 'tween' 
-    }
+    transition: { duration: 0.2, ease: 'easeOut', type: 'tween' }
   };
 };
 
@@ -132,30 +119,15 @@ const AppRoutes = () => {
             <AnimatePresence mode="wait">
               <Routes>
                 <Route path="/landing" element={<Navigate to="/" replace />} />
-                <Route path="/" element={
-                  <motion.div key="dashboard" {...pageTransition}>
-                    <Dashboard />
-                  </motion.div>
-                } />
-                <Route path="/recipes" element={
-                  <motion.div key="recipes" {...pageTransition}>
-                    <Recipes />
-                  </motion.div>
-                } />
-                <Route path="/calendar" element={
-                  <motion.div key="calendar" {...pageTransition}>
-                    <Calendar />
-                  </motion.div>
-                } />
-                <Route path="/shopping" element={
-                  <motion.div key="shopping" {...pageTransition}>
-                    <ShoppingList />
-                  </motion.div>
-                } />
+                <Route path="/" element={<motion.div key="dashboard" {...pageTransition}><Dashboard /></motion.div>} />
+                <Route path="/recipes" element={<motion.div key="recipes" {...pageTransition}><Recipes /></motion.div>} />
+                <Route path="/calendar" element={<motion.div key="calendar" {...pageTransition}><Calendar /></motion.div>} />
+                <Route path="/shopping" element={<motion.div key="shopping" {...pageTransition}><ShoppingList /></motion.div>} />
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </AnimatePresence>
           </main>
+          <FloatingTimer />
         </div>
       </MotionConfig>
     </LazyMotion>
@@ -165,13 +137,15 @@ const AppRoutes = () => {
 function App() {
   return (
     <AuthProvider>
-      <MealPlanProvider>
-        <Router>
-          <OAuthCallbackHandler>
-            <AppRoutes />
-          </OAuthCallbackHandler>
-        </Router>
-      </MealPlanProvider>
+      <TimerProvider>
+        <MealPlanProvider>
+          <Router>
+            <OAuthCallbackHandler>
+              <AppRoutes />
+            </OAuthCallbackHandler>
+          </Router>
+        </MealPlanProvider>
+      </TimerProvider>
     </AuthProvider>
   );
 }
