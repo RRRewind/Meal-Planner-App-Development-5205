@@ -11,10 +11,20 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
   const { recipes, addMealToPlan, removeMealFromPlan, getWeekMeals } = useMealPlan();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
-
+  const [isAdding, setIsAdding] = useState(false);
+  
   const dateKey = format(date, 'yyyy-MM-dd');
   const weekMeals = getWeekMeals();
   const currentMeals = weekMeals[dateKey]?.[mealType] || (mealType === 'snacks' ? [] : null);
+
+  console.log('🎯 MealPlanModal Debug:', {
+    date: dateKey,
+    mealType,
+    recipesCount: recipes.length,
+    currentMeals,
+    selectedCategory,
+    searchTerm
+  });
 
   const getMealIcon = (type) => {
     switch (type) {
@@ -40,7 +50,7 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
   React.useEffect(() => {
     const mealTypeToCategoryMap = {
       'breakfast': 'Breakfast',
-      'lunch': 'Lunch',
+      'lunch': 'Lunch', 
       'dinner': 'Dinner',
       'snacks': 'Snack'
     };
@@ -49,36 +59,50 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
   }, [mealType]);
 
   const filteredRecipes = recipes.filter(recipe => {
+    if (!recipe || !recipe.title) return false;
+    
     const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (recipe.description || '').toLowerCase().includes(searchTerm.toLowerCase());
+    
     const matchesCategory = selectedCategory === 'all' || 
-                           recipe.category.toLowerCase() === selectedCategory.toLowerCase();
+      (recipe.category || '').toLowerCase() === selectedCategory.toLowerCase();
+    
     return matchesSearch && matchesCategory;
   });
 
-  const categories = ['all', ...new Set(recipes.map(recipe => recipe.category))];
+  const categories = ['all', ...new Set(recipes.map(recipe => recipe.category).filter(Boolean))];
 
-  const handleAddRecipe = (recipe) => {
+  const handleAddRecipe = async (recipe) => {
+    if (isAdding) return; // Prevent double-clicks
+    
     console.log('🍽️ Adding recipe to meal plan:', {
       date: dateKey,
       mealType,
-      recipe: recipe.title
+      recipe: recipe.title,
+      recipeId: recipe.id
     });
 
+    setIsAdding(true);
+    
     try {
-      addMealToPlan(date, mealType, recipe);
+      await addMealToPlan(date, mealType, recipe);
       console.log('✅ Recipe added successfully');
       
       // For non-snacks, close the modal after adding
       if (mealType !== 'snacks') {
-        onClose();
+        setTimeout(() => {
+          onClose();
+        }, 500); // Small delay to show success
       }
     } catch (error) {
       console.error('❌ Error adding recipe to meal plan:', error);
+      alert('Failed to add recipe. Please try again.');
+    } finally {
+      setIsAdding(false);
     }
   };
 
-  const handleRemoveRecipe = (recipeId = null) => {
+  const handleRemoveRecipe = async (recipeId = null) => {
     console.log('🗑️ Removing recipe from meal plan:', {
       date: dateKey,
       mealType,
@@ -86,23 +110,13 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
     });
 
     try {
-      removeMealFromPlan(date, mealType, recipeId);
+      await removeMealFromPlan(date, mealType, recipeId);
       console.log('✅ Recipe removed successfully');
     } catch (error) {
       console.error('❌ Error removing recipe from meal plan:', error);
+      alert('Failed to remove recipe. Please try again.');
     }
   };
-
-  // Debug logging
-  console.log('🎯 MealPlanModal Debug:', {
-    date: dateKey,
-    mealType,
-    recipesCount: recipes.length,
-    filteredRecipesCount: filteredRecipes.length,
-    currentMeals,
-    selectedCategory,
-    searchTerm
-  });
 
   return (
     <motion.div
@@ -145,8 +159,7 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
 
         <div className="flex flex-col h-[calc(90vh-140px)]">
           {/* Current Meals */}
-          {((mealType === 'snacks' && currentMeals.length > 0) || 
-            (mealType !== 'snacks' && currentMeals)) && (
+          {((mealType === 'snacks' && currentMeals.length > 0) || (mealType !== 'snacks' && currentMeals)) && (
             <div className="p-6 border-b border-gray-200 bg-gray-50">
               <h3 className="font-semibold text-gray-900 mb-3">Current Selection</h3>
               <div className="space-y-2">
@@ -164,7 +177,7 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                         </div>
                         <div>
                           <div className="font-medium text-gray-900">{snack.title}</div>
-                          <div className="text-sm text-gray-600">{snack.prepTime} min • {snack.servings} servings</div>
+                          <div className="text-sm text-gray-600">{snack.prepTime || snack.prep_time || 0} min • {snack.servings} servings</div>
                         </div>
                       </div>
                       <div className="flex items-center space-x-2">
@@ -198,7 +211,7 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                       </div>
                       <div>
                         <div className="font-medium text-gray-900">{currentMeals.title}</div>
-                        <div className="text-sm text-gray-600">{currentMeals.prepTime} min • {currentMeals.servings} servings</div>
+                        <div className="text-sm text-gray-600">{currentMeals.prepTime || currentMeals.prep_time || 0} min • {currentMeals.servings} servings</div>
                       </div>
                     </div>
                     <div className="flex items-center space-x-2">
@@ -268,12 +281,13 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1">
                           <h4 className="font-semibold text-gray-900 mb-1">{recipe.title}</h4>
-                          <p className="text-sm text-gray-600 line-clamp-2">{recipe.description}</p>
+                          <p className="text-sm text-gray-600 line-clamp-2">{recipe.description || 'No description available'}</p>
                         </div>
                         <span className="bg-orange-100 text-orange-800 px-2 py-1 rounded-lg text-xs font-medium ml-2">
-                          {recipe.category}
+                          {recipe.category || 'Other'}
                         </span>
                       </div>
+
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-600">
                           <div className="flex items-center space-x-1">
@@ -282,9 +296,10 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                           </div>
                           <div className="flex items-center space-x-1">
                             <SafeIcon icon={FiUsers} className="w-4 h-4" />
-                            <span>{recipe.servings}</span>
+                            <span>{recipe.servings || 1}</span>
                           </div>
                         </div>
+                        
                         <div className="flex items-center space-x-2">
                           <motion.button
                             whileHover={{ scale: 1.05 }}
@@ -293,14 +308,20 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                           >
                             <SafeIcon icon={FiPlay} className="w-4 h-4" />
                           </motion.button>
+                          
                           <motion.button
                             whileHover={{ scale: 1.05 }}
                             whileTap={{ scale: 0.95 }}
                             onClick={() => handleAddRecipe(recipe)}
-                            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                            disabled={isAdding}
+                            className={`px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2 ${
+                              isAdding 
+                                ? 'bg-gray-400 cursor-not-allowed text-white' 
+                                : 'bg-orange-500 hover:bg-orange-600 text-white'
+                            }`}
                           >
-                            <SafeIcon icon={FiPlus} className="w-4 h-4" />
-                            <span>Add</span>
+                            <SafeIcon icon={isAdding ? FiClock : FiPlus} className="w-4 h-4" />
+                            <span>{isAdding ? 'Adding...' : 'Add'}</span>
                           </motion.button>
                         </div>
                       </div>
@@ -312,12 +333,22 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
               <div className="text-center py-16">
                 <SafeIcon icon={FiCoffee} className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No recipes found</h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-4">
                   {recipes.length === 0 
                     ? 'Add some recipes first to start planning meals' 
                     : 'Try adjusting your search or filter criteria'
                   }
                 </p>
+                {recipes.length === 0 && (
+                  <motion.button
+                    whileHover={{ scale: 1.05 }}
+                    whileTap={{ scale: 0.95 }}
+                    onClick={onClose}
+                    className="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-xl font-medium transition-colors"
+                  >
+                    Add Recipes First
+                  </motion.button>
+                )}
               </div>
             )}
           </div>

@@ -60,7 +60,7 @@ export const MealPlanProvider = ({ children }) => {
     setLoading(true);
     try {
       console.log('📊 Loading user data from Supabase...');
-      
+
       // Load recipes
       const { data: recipesData, error: recipesError } = await supabase
         .from('recipes_mp2025')
@@ -108,14 +108,12 @@ export const MealPlanProvider = ({ children }) => {
       }
 
       // Transform recipes data
-      const formattedRecipes = Array.isArray(recipesData) 
-        ? recipesData.map(recipe => ({
-            ...recipe,
-            prepTime: recipe.prep_time || recipe.prepTime || 0,
-            ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
-            instructions: Array.isArray(recipe.instructions) ? recipe.instructions : []
-          }))
-        : [];
+      const formattedRecipes = Array.isArray(recipesData) ? recipesData.map(recipe => ({
+        ...recipe,
+        prepTime: recipe.prep_time || recipe.prepTime || 0,
+        ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
+        instructions: Array.isArray(recipe.instructions) ? recipe.instructions : []
+      })) : [];
 
       setRecipes(formattedRecipes);
       setMealPlans(mealPlansMap);
@@ -310,7 +308,7 @@ export const MealPlanProvider = ({ children }) => {
   const addMealToPlan = async (date, mealType, recipe) => {
     if (!date || !mealType || !recipe) {
       console.error('Invalid meal plan data:', { date, mealType, recipe });
-      return;
+      return Promise.reject(new Error('Invalid meal plan data'));
     }
 
     const dateKey = format(date, 'yyyy-MM-dd');
@@ -319,6 +317,26 @@ export const MealPlanProvider = ({ children }) => {
       mealType,
       recipeTitle: recipe.title,
       recipeId: recipe.id
+    });
+
+    // Update local state immediately for better UX
+    setMealPlans(prev => {
+      const updated = { ...prev };
+      if (!updated[dateKey]) {
+        updated[dateKey] = {};
+      }
+
+      if (mealType === 'snacks') {
+        if (!updated[dateKey][mealType]) {
+          updated[dateKey][mealType] = [];
+        }
+        updated[dateKey][mealType] = [...updated[dateKey][mealType], recipe];
+      } else {
+        updated[dateKey][mealType] = recipe;
+      }
+
+      console.log('📋 Updated meal plans:', updated[dateKey]);
+      return updated;
     });
 
     if (user) {
@@ -339,41 +357,63 @@ export const MealPlanProvider = ({ children }) => {
         }
 
         console.log('✅ Successfully saved to Supabase');
+        return Promise.resolve();
       } catch (error) {
         console.error('❌ Error adding meal to plan in Supabase:', error);
-        // Continue with local update even if Supabase fails
+        // Revert local state on error
+        setMealPlans(prev => {
+          const updated = { ...prev };
+          if (mealType === 'snacks') {
+            if (updated[dateKey] && Array.isArray(updated[dateKey][mealType])) {
+              updated[dateKey][mealType] = updated[dateKey][mealType].filter(
+                item => item.id !== recipe.id
+              );
+            }
+          } else {
+            if (updated[dateKey]) {
+              updated[dateKey][mealType] = null;
+            }
+          }
+          return updated;
+        });
+        return Promise.reject(error);
       }
     }
 
-    // Update local state
-    setMealPlans(prev => {
-      const updated = { ...prev };
-      if (!updated[dateKey]) {
-        updated[dateKey] = {};
-      }
-
-      if (mealType === 'snacks') {
-        if (!updated[dateKey][mealType]) {
-          updated[dateKey][mealType] = [];
-        }
-        updated[dateKey][mealType] = [...updated[dateKey][mealType], recipe];
-      } else {
-        updated[dateKey][mealType] = recipe;
-      }
-
-      console.log('📋 Updated meal plans:', updated[dateKey]);
-      return updated;
-    });
+    return Promise.resolve();
   };
 
   const removeMealFromPlan = async (date, mealType, recipeId = null) => {
     if (!date || !mealType) {
       console.error('Invalid meal plan removal data');
-      return;
+      return Promise.reject(new Error('Invalid meal plan removal data'));
     }
 
     const dateKey = format(date, 'yyyy-MM-dd');
     console.log('🗑️ Removing meal from plan:', { dateKey, mealType, recipeId });
+
+    // Update local state immediately
+    setMealPlans(prev => {
+      const updated = { ...prev };
+      if (mealType === 'snacks' && recipeId) {
+        if (updated[dateKey] && Array.isArray(updated[dateKey].snacks)) {
+          updated[dateKey] = {
+            ...updated[dateKey],
+            snacks: updated[dateKey].snacks.filter(snack => snack && snack.id !== recipeId)
+          };
+        }
+      } else {
+        if (updated[dateKey]) {
+          updated[dateKey] = {
+            ...updated[dateKey],
+            [mealType]: null
+          };
+        }
+      }
+
+      console.log('📋 Updated meal plans after removal:', updated[dateKey]);
+      return updated;
+    });
 
     if (user) {
       try {
@@ -396,35 +436,14 @@ export const MealPlanProvider = ({ children }) => {
         }
 
         console.log('✅ Successfully removed from Supabase');
+        return Promise.resolve();
       } catch (error) {
         console.error('❌ Error removing meal from plan in Supabase:', error);
-        // Continue with local update even if Supabase fails
+        return Promise.reject(error);
       }
     }
 
-    // Update local state
-    setMealPlans(prev => {
-      const updated = { ...prev };
-
-      if (mealType === 'snacks' && recipeId) {
-        if (updated[dateKey] && Array.isArray(updated[dateKey].snacks)) {
-          updated[dateKey] = {
-            ...updated[dateKey],
-            snacks: updated[dateKey].snacks.filter(snack => snack && snack.id !== recipeId)
-          };
-        }
-      } else {
-        if (updated[dateKey]) {
-          updated[dateKey] = {
-            ...updated[dateKey],
-            [mealType]: null
-          };
-        }
-      }
-
-      console.log('📋 Updated meal plans after removal:', updated[dateKey]);
-      return updated;
-    });
+    return Promise.resolve();
   };
 
   const getTodaysMeals = () => {
