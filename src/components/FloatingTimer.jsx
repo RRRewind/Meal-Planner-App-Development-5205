@@ -4,16 +4,22 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useTimer } from '../context/TimerContext';
 
-const { FiClock, FiPlay, FiPause, FiX } = FiIcons;
+const { FiClock, FiPlay, FiPause, FiX, FiEye } = FiIcons;
 
 const FloatingTimer = () => {
-  const { activeTimer, timeLeft, isRunning, recipeName, pauseTimer, resumeTimer, stopTimer, formatTime } = useTimer();
+  const { activeTimer, timeLeft, isRunning, recipeName, recipeData, pauseTimer, resumeTimer, stopTimer, formatTime, openCookingMode } = useTimer();
 
   if (!activeTimer || timeLeft === 0) {
     return null;
   }
 
   const isUrgent = timeLeft <= 60; // Red when less than 1 minute
+
+  const handleViewRecipe = () => {
+    if (openCookingMode && recipeData) {
+      openCookingMode();
+    }
+  };
 
   return (
     <AnimatePresence>
@@ -34,7 +40,7 @@ const FloatingTimer = () => {
             scale: { duration: 1, repeat: isUrgent ? Infinity : 0 },
             boxShadow: { duration: 1, repeat: isUrgent ? Infinity : 0 }
           }}
-          className={`bg-white rounded-2xl shadow-2xl border-2 p-4 min-w-[280px] ${
+          className={`bg-white rounded-2xl shadow-2xl border-2 p-4 min-w-[300px] ${
             isUrgent ? 'border-red-300' : 'border-orange-200'
           }`}
         >
@@ -78,20 +84,36 @@ const FloatingTimer = () => {
           </div>
 
           {/* Controls */}
-          <div className="flex items-center justify-center space-x-3">
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={isRunning ? pauseTimer : resumeTimer}
-              className={`px-4 py-2 rounded-xl font-medium transition-colors flex items-center space-x-2 ${
-                isRunning
-                  ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
-                  : 'bg-green-500 hover:bg-green-600 text-white'
-              }`}
-            >
-              <SafeIcon icon={isRunning ? FiPause : FiPlay} className="w-4 h-4" />
-              <span>{isRunning ? 'Pause' : 'Resume'}</span>
-            </motion.button>
+          <div className="space-y-3">
+            {/* Timer Controls */}
+            <div className="flex items-center justify-center space-x-3">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                onClick={isRunning ? pauseTimer : resumeTimer}
+                className={`px-4 py-2 rounded-xl font-medium transition-colors flex items-center space-x-2 ${
+                  isRunning
+                    ? 'bg-yellow-500 hover:bg-yellow-600 text-white'
+                    : 'bg-green-500 hover:bg-green-600 text-white'
+                }`}
+              >
+                <SafeIcon icon={isRunning ? FiPause : FiPlay} className="w-4 h-4" />
+                <span>{isRunning ? 'Pause' : 'Resume'}</span>
+              </motion.button>
+            </div>
+
+            {/* View Recipe Button */}
+            {recipeData && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleViewRecipe}
+                className="w-full bg-blue-500 hover:bg-blue-600 text-white py-2 px-4 rounded-xl font-medium transition-colors flex items-center justify-center space-x-2"
+              >
+                <SafeIcon icon={FiEye} className="w-4 h-4" />
+                <span>View Recipe</span>
+              </motion.button>
+            )}
           </div>
 
           {/* Progress Bar */}

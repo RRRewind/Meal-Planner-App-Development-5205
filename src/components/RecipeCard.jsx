@@ -4,7 +4,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import CookingMode from './CookingMode';
 
-const { FiClock, FiUsers, FiEdit3, FiTrash2, FiChef, FiPlay } = FiIcons;
+const { FiClock, FiUsers, FiEdit3, FiTrash2, FiChefHat, FiPlay } = FiIcons;
 
 const RecipeCard = ({ recipe, onEdit, onDelete }) => {
   const [showCookingMode, setShowCookingMode] = useState(false);
@@ -68,7 +68,7 @@ const RecipeCard = ({ recipe, onEdit, onDelete }) => {
               <span className="bg-white bg-opacity-20 px-3 py-1 rounded-full text-sm font-medium">
                 {category}
               </span>
-              <SafeIcon icon={FiChef} className="w-6 h-6" />
+              <SafeIcon icon={FiChefHat} className="w-6 h-6" />
             </div>
             <h3 className="text-xl font-bold mb-2 line-clamp-2">{title}</h3>
             {description && (

@@ -15,6 +15,8 @@ export const TimerProvider = ({ children }) => {
   const [timeLeft, setTimeLeft] = useState(0);
   const [isRunning, setIsRunning] = useState(false);
   const [recipeName, setRecipeName] = useState('');
+  const [recipeData, setRecipeData] = useState(null);
+  const [cookingModeCallback, setCookingModeCallback] = useState(null);
 
   // Timer effect
   useEffect(() => {
@@ -93,11 +95,13 @@ export const TimerProvider = ({ children }) => {
     }
   };
 
-  const startTimer = (minutes, recipe = '') => {
+  const startTimer = (minutes, recipe = '', recipeObj = null, openCallback = null) => {
     setActiveTimer(Date.now());
     setTimeLeft(minutes * 60);
     setIsRunning(true);
     setRecipeName(recipe);
+    setRecipeData(recipeObj);
+    setCookingModeCallback(() => openCallback);
     
     // Request notification permission if needed
     if ('Notification' in window && Notification.permission === 'default') {
@@ -118,6 +122,14 @@ export const TimerProvider = ({ children }) => {
     setTimeLeft(0);
     setIsRunning(false);
     setRecipeName('');
+    setRecipeData(null);
+    setCookingModeCallback(null);
+  };
+
+  const openCookingMode = () => {
+    if (cookingModeCallback) {
+      cookingModeCallback();
+    }
   };
 
   const formatTime = (seconds) => {
@@ -136,11 +148,13 @@ export const TimerProvider = ({ children }) => {
     timeLeft,
     isRunning,
     recipeName,
+    recipeData,
     startTimer,
     pauseTimer,
     resumeTimer,
     stopTimer,
-    formatTime
+    formatTime,
+    openCookingMode
   };
 
   return (

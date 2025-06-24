@@ -1,24 +1,24 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { format, isToday, isTomorrow } from 'date-fns';
 import { Link } from 'react-router-dom';
 import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useMealPlan } from '../context/MealPlanContext';
 import { useAuth } from '../context/AuthContext';
+import CookingMode from '../components/CookingMode';
 
-const { FiSun, FiCoffee, FiSunset, FiMoreHorizontal, FiClock, FiCalendar, FiTrendingUp, FiPlus } = FiIcons;
+const { FiSun, FiCoffee, FiSunset, FiMoreHorizontal, FiClock, FiCalendar, FiTrendingUp, FiPlus, FiPlay } = FiIcons;
 
 const Dashboard = () => {
   const { getUpcomingMeals, recipes, getShoppingList } = useMealPlan();
   const { user } = useAuth();
-  
+  const [showCookingMode, setShowCookingMode] = useState(false);
+  const [selectedRecipe, setSelectedRecipe] = useState(null);
+
   const upcomingMeals = getUpcomingMeals();
   const shoppingList = getShoppingList();
-
-  const userName = user?.user_metadata?.full_name || 
-                   user?.email?.split('@')[0] || 
-                   'there';
+  const userName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'there';
 
   const getMealIcon = (mealType) => {
     switch (mealType) {
@@ -44,6 +44,11 @@ const Dashboard = () => {
     if (isToday(date)) return 'Today';
     if (isTomorrow(date)) return 'Tomorrow';
     return format(date, 'EEEE, MMM d');
+  };
+
+  const handleStartCooking = (recipe) => {
+    setSelectedRecipe(recipe);
+    setShowCookingMode(true);
   };
 
   const todaysMeals = upcomingMeals.filter(meal => isToday(meal.date));
@@ -136,7 +141,6 @@ const Dashboard = () => {
               <SafeIcon icon={FiClock} className="w-6 h-6 text-orange-500" />
             </div>
           </div>
-          
           <div className="p-6">
             {todaysMeals.length > 0 ? (
               <div className="space-y-4">
@@ -155,8 +159,18 @@ const Dashboard = () => {
                       <h3 className="font-semibold text-gray-900 capitalize">{meal.mealType}</h3>
                       <p className="text-gray-600">{meal.recipe?.title || 'Unknown Recipe'}</p>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {meal.recipe?.prepTime || meal.recipe?.prep_time || 0} min
+                    <div className="flex items-center space-x-2">
+                      <div className="text-sm text-gray-500">
+                        {meal.recipe?.prepTime || meal.recipe?.prep_time || 0} min
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleStartCooking(meal.recipe)}
+                        className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg transition-colors"
+                      >
+                        <SafeIcon icon={FiPlay} className="w-4 h-4" />
+                      </motion.button>
                     </div>
                   </motion.div>
                 ))}
@@ -194,7 +208,6 @@ const Dashboard = () => {
               <SafeIcon icon={FiTrendingUp} className="w-6 h-6 text-orange-500" />
             </div>
           </div>
-          
           <div className="p-6">
             {upcomingMealsFiltered.length > 0 ? (
               <div className="space-y-4">
@@ -213,8 +226,18 @@ const Dashboard = () => {
                       <h3 className="font-semibold text-gray-900">{meal.recipe?.title || 'Unknown Recipe'}</h3>
                       <p className="text-gray-600 capitalize">{meal.mealType} • {getDateLabel(meal.date)}</p>
                     </div>
-                    <div className="text-sm text-gray-500">
-                      {meal.recipe?.prepTime || meal.recipe?.prep_time || 0}m
+                    <div className="flex items-center space-x-2">
+                      <div className="text-sm text-gray-500">
+                        {meal.recipe?.prepTime || meal.recipe?.prep_time || 0}m
+                      </div>
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => handleStartCooking(meal.recipe)}
+                        className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors"
+                      >
+                        <SafeIcon icon={FiPlay} className="w-4 h-4" />
+                      </motion.button>
                     </div>
                   </motion.div>
                 ))}
@@ -254,8 +277,7 @@ const Dashboard = () => {
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Get Started with Meal Planning</h2>
             <p className="text-gray-600 mb-6 max-w-2xl mx-auto">
-              Welcome to your meal planning journey! Start by adding your favorite recipes, 
-              then plan your weekly meals and generate smart shopping lists.
+              Welcome to your meal planning journey! Start by adding your favorite recipes, then plan your weekly meals and generate smart shopping lists.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link to="/recipes">
@@ -282,6 +304,19 @@ const Dashboard = () => {
           </div>
         </motion.div>
       )}
+
+      {/* Cooking Mode Modal */}
+      <AnimatePresence>
+        {showCookingMode && selectedRecipe && (
+          <CookingMode
+            recipe={selectedRecipe}
+            onClose={() => {
+              setShowCookingMode(false);
+              setSelectedRecipe(null);
+            }}
+          />
+        )}
+      </AnimatePresence>
     </div>
   );
 };

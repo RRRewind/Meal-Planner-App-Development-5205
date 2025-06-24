@@ -16,14 +16,14 @@ const CookingMode = ({ recipe, onClose }) => {
   const handleCustomTimer = () => {
     const minutes = parseInt(customTimer);
     if (minutes > 0) {
-      startTimer(minutes, recipe.title);
+      startTimer(minutes, recipe.title, recipe, () => setShowCookingMode(true));
       setCustomTimer('');
       setShowCustomTimer(false);
     }
   };
 
   const handleQuickTimer = (minutes) => {
-    startTimer(minutes, recipe.title);
+    startTimer(minutes, recipe.title, recipe, () => setShowCookingMode(true));
   };
 
   const toggleStepComplete = (stepIndex) => {

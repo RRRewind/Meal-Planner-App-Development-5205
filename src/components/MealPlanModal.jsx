@@ -5,7 +5,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useMealPlan } from '../context/MealPlanContext';
 
-const { FiX, FiSearch, FiPlus, FiTrash2, FiCoffee, FiSun, FiSunset, FiMoreHorizontal } = FiIcons;
+const { FiX, FiSearch, FiPlus, FiTrash2, FiCoffee, FiSun, FiSunset, FiMoreHorizontal, FiPlay, FiUtensils } = FiIcons;
 
 const MealPlanModal = ({ date, mealType, onClose }) => {
   const { recipes, addMealToPlan, removeMealFromPlan, getWeekMeals } = useMealPlan();
@@ -36,8 +36,21 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
     }
   };
 
+  // Set default category based on meal type
+  React.useEffect(() => {
+    const mealTypeToCategoryMap = {
+      'breakfast': 'Breakfast',
+      'lunch': 'Lunch',
+      'dinner': 'Dinner',
+      'snacks': 'Snack'
+    };
+    
+    const defaultCategory = mealTypeToCategoryMap[mealType] || 'all';
+    setSelectedCategory(defaultCategory);
+  }, [mealType]);
+
   const filteredRecipes = recipes.filter(recipe => {
-    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    const matchesSearch = recipe.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
                          recipe.description.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'all' || 
                            recipe.category.toLowerCase() === selectedCategory.toLowerCase();
@@ -52,11 +65,9 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
       mealType,
       recipe: recipe.title
     });
-    
     try {
       addMealToPlan(date, mealType, recipe);
       console.log('✅ Recipe added successfully');
-      
       // For non-snacks, close the modal after adding
       if (mealType !== 'snacks') {
         onClose();
@@ -72,7 +83,6 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
       mealType,
       recipeId
     });
-    
     try {
       removeMealFromPlan(date, mealType, recipeId);
       console.log('✅ Recipe removed successfully');
@@ -143,14 +153,23 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                           <div className="text-sm text-gray-600">{snack.prepTime} min • {snack.servings} servings</div>
                         </div>
                       </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => handleRemoveRecipe(snack.id)}
-                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                      >
-                        <SafeIcon icon={FiTrash2} className="w-4 h-4" />
-                      </motion.button>
+                      <div className="flex items-center space-x-2">
+                        <motion.button
+                          whileHover={{ scale: 1.05 }}
+                          whileTap={{ scale: 0.95 }}
+                          className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg transition-colors"
+                        >
+                          <SafeIcon icon={FiPlay} className="w-4 h-4" />
+                        </motion.button>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleRemoveRecipe(snack.id)}
+                          className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                        >
+                          <SafeIcon icon={FiTrash2} className="w-4 h-4" />
+                        </motion.button>
+                      </div>
                     </motion.div>
                   ))
                 ) : (
@@ -168,14 +187,23 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                         <div className="text-sm text-gray-600">{currentMeals.prepTime} min • {currentMeals.servings} servings</div>
                       </div>
                     </div>
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
-                      onClick={() => handleRemoveRecipe()}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                    >
-                      <SafeIcon icon={FiTrash2} className="w-4 h-4" />
-                    </motion.button>
+                    <div className="flex items-center space-x-2">
+                      <motion.button
+                        whileHover={{ scale: 1.05 }}
+                        whileTap={{ scale: 0.95 }}
+                        className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg transition-colors"
+                      >
+                        <SafeIcon icon={FiPlay} className="w-4 h-4" />
+                      </motion.button>
+                      <motion.button
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.9 }}
+                        onClick={() => handleRemoveRecipe()}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <SafeIcon icon={FiTrash2} className="w-4 h-4" />
+                      </motion.button>
+                    </div>
                   </motion.div>
                 )}
               </div>
@@ -232,7 +260,6 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                           {recipe.category}
                         </span>
                       </div>
-
                       <div className="flex items-center justify-between">
                         <div className="flex items-center space-x-4 text-sm text-gray-600">
                           <div className="flex items-center space-x-1">
@@ -244,16 +271,24 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
                             <span>{recipe.servings}</span>
                           </div>
                         </div>
-
-                        <motion.button
-                          whileHover={{ scale: 1.05 }}
-                          whileTap={{ scale: 0.95 }}
-                          onClick={() => handleAddRecipe(recipe)}
-                          className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
-                        >
-                          <SafeIcon icon={FiPlus} className="w-4 h-4" />
-                          <span>Add</span>
-                        </motion.button>
+                        <div className="flex items-center space-x-2">
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-lg transition-colors"
+                          >
+                            <SafeIcon icon={FiPlay} className="w-4 h-4" />
+                          </motion.button>
+                          <motion.button
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.95 }}
+                            onClick={() => handleAddRecipe(recipe)}
+                            className="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center space-x-2"
+                          >
+                            <SafeIcon icon={FiPlus} className="w-4 h-4" />
+                            <span>Add</span>
+                          </motion.button>
+                        </div>
                       </div>
                     </motion.div>
                   ))}
@@ -261,11 +296,11 @@ const MealPlanModal = ({ date, mealType, onClose }) => {
               </div>
             ) : (
               <div className="text-center py-16">
-                <SafeIcon icon={FiIcons.FiSearch} className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+                <SafeIcon icon={FiUtensils} className="w-16 h-16 text-gray-300 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-gray-900 mb-2">No recipes found</h3>
                 <p className="text-gray-600">
                   {recipes.length === 0 
-                    ? 'Add some recipes first to start planning meals' 
+                    ? 'Add some recipes first to start planning meals'
                     : 'Try adjusting your search or filter criteria'
                   }
                 </p>
