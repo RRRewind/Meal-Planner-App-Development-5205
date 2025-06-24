@@ -30,41 +30,29 @@ const Navigation = () => {
     { path: '/shopping', icon: FiShoppingCart, label: 'Shopping' }
   ];
 
-  // Static components for mobile
-  const StaticButton = ({ children, className, onClick, ...props }) => {
+  // Simplified mobile motion - keep original styling but reduce motion complexity
+  const getButtonProps = () => {
     if (isMobile) {
-      return (
-        <button className={`${className} mobile-static`} onClick={onClick} {...props}>
-          {children}
-        </button>
-      );
+      return {
+        whileTap: { scale: 0.98 },
+        transition: { duration: 0.1 }
+      };
     }
-    return (
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
-        className={className}
-        onClick={onClick}
-        {...props}
-      >
-        {children}
-      </motion.button>
-    );
+    return {
+      whileHover: { scale: 1.05 },
+      whileTap: { scale: 0.95 },
+      transition: { duration: 0.15 }
+    };
   };
 
-  const StaticDiv = ({ children, className, ...props }) => {
+  const getLogoProps = () => {
     if (isMobile) {
-      return <div className={`${className} mobile-static`} {...props}>{children}</div>;
+      return {};
     }
-    return (
-      <motion.div
-        whileHover={{ rotate: 5, scale: 1.05 }}
-        className={className}
-        {...props}
-      >
-        {children}
-      </motion.div>
-    );
+    return {
+      whileHover: { rotate: 5, scale: 1.05 },
+      transition: { duration: 0.2 }
+    };
   };
 
   return (
@@ -74,9 +62,12 @@ const Navigation = () => {
           <div className="flex items-center justify-between h-16">
             {/* Logo */}
             <Link to="/" className="flex items-center space-x-2 group">
-              <StaticDiv className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center">
+              <motion.div 
+                {...getLogoProps()}
+                className="w-8 h-8 bg-gradient-to-br from-orange-400 to-red-500 rounded-lg flex items-center justify-center"
+              >
                 <SafeIcon icon={FiIcons.FiCoffee} className="w-5 h-5 text-white" />
-              </StaticDiv>
+              </motion.div>
               <div className="flex flex-col">
                 <span className="text-xl font-bold gradient-text-stable leading-none">
                   Meal Plan
@@ -93,7 +84,8 @@ const Navigation = () => {
                 const isActive = location.pathname === item.path;
                 return (
                   <Link key={item.path} to={item.path} className="relative">
-                    <StaticDiv
+                    <motion.div
+                      {...(isMobile ? {} : { whileHover: { scale: 1.02 } })}
                       className={`flex items-center space-x-2 px-4 py-2 rounded-lg transition-all duration-200 ${
                         isActive
                           ? 'bg-gradient-to-r from-orange-500 to-red-500 text-white shadow-lg'
@@ -102,7 +94,7 @@ const Navigation = () => {
                     >
                       <SafeIcon icon={item.icon} className="w-5 h-5" />
                       <span className="font-medium hidden sm:block">{item.label}</span>
-                    </StaticDiv>
+                    </motion.div>
                     {!isMobile && isActive && (
                       <motion.div
                         layoutId="activeTab"
@@ -119,17 +111,18 @@ const Navigation = () => {
             {/* Auth Section */}
             <div className="flex items-center space-x-3">
               {loading ? (
-                <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-200 rounded-full animate-pulse"></div>
               ) : user ? (
                 <UserMenu />
               ) : (
-                <StaticButton
+                <motion.button
+                  {...getButtonProps()}
                   onClick={() => setShowAuthModal(true)}
-                  className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all"
+                  className="flex items-center space-x-2 bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-2 rounded-lg font-medium shadow-lg hover:shadow-xl transition-all mobile-static"
                 >
                   <SafeIcon icon={FiLogIn} className="w-4 h-4" />
                   <span className="hidden sm:inline">Sign In</span>
-                </StaticButton>
+                </motion.button>
               )}
             </div>
           </div>
@@ -137,24 +130,14 @@ const Navigation = () => {
       </nav>
 
       {/* Auth Modal */}
-      {!isMobile && (
-        <AnimatePresence>
-          {showAuthModal && (
-            <AuthModal
-              isOpen={showAuthModal}
-              onClose={() => setShowAuthModal(false)}
-            />
-          )}
-        </AnimatePresence>
-      )}
-      
-      {/* Static modal for mobile */}
-      {isMobile && showAuthModal && (
-        <AuthModal
-          isOpen={showAuthModal}
-          onClose={() => setShowAuthModal(false)}
-        />
-      )}
+      <AnimatePresence>
+        {showAuthModal && (
+          <AuthModal
+            isOpen={showAuthModal}
+            onClose={() => setShowAuthModal(false)}
+          />
+        )}
+      </AnimatePresence>
     </>
   );
 };

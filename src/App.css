@@ -30,129 +30,64 @@ select:focus {
   outline-offset: 2px;
 }
 
-/* CRITICAL: Completely disable animations on mobile to prevent flickering */
+/* CRITICAL: Target only problematic animations on mobile */
 @media (max-width: 768px) {
-  /* Force disable ALL animations on mobile */
-  *,
-  *::before,
-  *::after,
-  [data-framer-name],
-  .framer-motion,
-  .motion-safe {
+  /* Disable only Framer Motion animations that cause flickering */
+  [data-framer-motion],
+  .framer-motion {
     animation: none !important;
     transition: none !important;
     transform: none !important;
     -webkit-transform: none !important;
+  }
+
+  /* Disable problematic motion properties */
+  .motion-safe {
     will-change: auto !important;
     -webkit-backface-visibility: visible !important;
     backface-visibility: visible !important;
   }
 
-  /* Completely disable Framer Motion on mobile */
-  [data-framer-motion] {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
-    -webkit-transform: none !important;
-  }
-
-  /* Override any motion classes */
-  .animate-pulse,
-  .animate-spin,
-  .animate-bounce {
-    animation: none !important;
-  }
-
-  /* Disable gradient animations */
-  .bg-gradient-to-r,
-  .bg-gradient-to-br,
-  .bg-gradient-to-l,
-  .bg-gradient-to-t,
-  .bg-gradient-to-b {
-    background: #f97316 !important; /* Fallback solid color */
-  }
-
-  /* Static gradient text without animations */
+  /* Keep gradient backgrounds but disable problematic transforms */
   .gradient-text-stable,
   .bg-clip-text {
-    background: linear-gradient(90deg, #ea580c 0%, #dc2626 100%) !important;
-    -webkit-background-clip: text !important;
-    background-clip: text !important;
-    -webkit-text-fill-color: transparent !important;
-    /* Remove all transform properties */
+    -webkit-font-smoothing: antialiased !important;
+    -moz-osx-font-smoothing: grayscale !important;
     transform: none !important;
     -webkit-transform: none !important;
     -webkit-backface-visibility: visible !important;
     backface-visibility: visible !important;
     will-change: auto !important;
-    -webkit-font-smoothing: antialiased !important;
-    -moz-osx-font-smoothing: grayscale !important;
   }
 
-  /* Disable hover effects on mobile */
+  /* Disable hover scale effects that cause flickering */
   button:hover,
-  .hover\\:scale-105:hover,
-  .hover\\:bg-orange-50:hover,
-  *:hover {
+  .hover\:scale-105:hover {
     transform: none !important;
     -webkit-transform: none !important;
-    transition: none !important;
   }
 
-  /* Force static positioning for better performance */
-  .fixed,
-  .sticky {
-    position: static !important;
+  /* Optimize tap interactions */
+  button,
+  [role="button"] {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
   }
 
-  /* Disable backdrop filters on mobile */
+  /* Simplify backdrop blur for better performance */
   .backdrop-blur-md {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-    background: rgba(255, 255, 255, 0.95) !important;
-  }
-
-  /* Disable shadows on mobile for better performance */
-  .shadow-lg,
-  .shadow-xl,
-  .shadow-2xl {
-    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1) !important;
-  }
-
-  /* Simplify rounded corners on mobile */
-  .rounded-2xl {
-    border-radius: 0.75rem !important;
-  }
-
-  .rounded-xl {
-    border-radius: 0.5rem !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
   }
 }
 
-/* CRITICAL: iOS Safari specific overrides */
+/* iOS Safari specific optimizations */
 @supports (-webkit-touch-callout: none) {
-  /* Target iOS Safari specifically */
   @media (max-width: 768px) {
-    *,
-    *::before,
-    *::after {
-      animation: none !important;
-      transition: none !important;
-      transform: none !important;
-      -webkit-transform: none !important;
-      will-change: auto !important;
-      -webkit-backface-visibility: visible !important;
-      backface-visibility: visible !important;
-      -webkit-font-smoothing: antialiased !important;
-      -moz-osx-font-smoothing: grayscale !important;
-    }
-
-    /* Force static rendering */
     .gradient-text-stable {
-      background: linear-gradient(90deg, #ea580c 0%, #dc2626 100%) !important;
-      -webkit-background-clip: text !important;
-      background-clip: text !important;
-      -webkit-text-fill-color: transparent !important;
+      -webkit-font-smoothing: antialiased !important;
       transform: none !important;
       -webkit-transform: none !important;
       -webkit-perspective: none !important;
@@ -161,9 +96,8 @@ select:focus {
   }
 }
 
-/* Desktop animations (unchanged) */
+/* Desktop animations (keep all original functionality) */
 @media (min-width: 769px) {
-  /* Enable full animations only on desktop */
   .motion-safe {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
@@ -198,99 +132,18 @@ select:focus {
   }
 }
 
-/* Mobile tap optimizations */
-@media (max-width: 768px) {
-  button,
-  [role="button"],
-  .clickable {
-    -webkit-tap-highlight-color: transparent;
-    -webkit-touch-callout: none;
-    -webkit-user-select: none;
-    user-select: none;
-    /* Remove all transforms */
-    transform: none !important;
-    -webkit-transform: none !important;
-    transition: background-color 0.1s ease !important;
-  }
-
-  /* Simplify button interactions */
-  button:active {
-    background-color: rgba(0, 0, 0, 0.05) !important;
-    transform: none !important;
-    -webkit-transform: none !important;
-  }
-}
-
-/* Performance optimization classes for mobile */
-@media (max-width: 768px) {
-  .performance-optimized,
-  .vercel-optimized {
-    contain: layout style paint;
-    will-change: auto;
-    transform: none !important;
-    -webkit-transform: none !important;
-  }
-}
-
-/* Force reduced motion on mobile */
-@media (max-width: 768px) {
-  @media (prefers-reduced-motion: no-preference) {
-    * {
-      animation: none !important;
-      transition: none !important;
-    }
-  }
-}
-
-/* Disable problematic CSS properties on mobile */
-@media (max-width: 768px) {
-  .slide-up,
-  .fade-in {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
-    -webkit-transform: none !important;
-  }
-
-  /* Remove complex keyframes */
-  @keyframes slideUp {
-    from { opacity: 1; }
-    to { opacity: 1; }
-  }
-
-  @keyframes fadeIn {
-    from { opacity: 1; }
-    to { opacity: 1; }
-  }
-
-  .complex-animation {
-    animation: none !important;
-  }
-}
-
-/* Mobile-specific utility classes */
+/* Mobile utility classes */
 @media (max-width: 768px) {
   .mobile-static {
-    animation: none !important;
-    transition: none !important;
     transform: none !important;
     -webkit-transform: none !important;
+    animation: none !important;
+    transition: background-color 0.15s ease, border-color 0.15s ease !important;
   }
 
   .mobile-no-motion {
     will-change: auto !important;
     -webkit-backface-visibility: visible !important;
     backface-visibility: visible !important;
-  }
-}
-
-/* Fallback for very old mobile browsers */
-@media (max-width: 480px) {
-  * {
-    animation: none !important;
-    transition: none !important;
-    transform: none !important;
-    -webkit-transform: none !important;
-    will-change: auto !important;
   }
 }

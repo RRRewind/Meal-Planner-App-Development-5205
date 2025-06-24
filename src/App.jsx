@@ -71,16 +71,23 @@ const useIsMobile = () => {
   return isMobile;
 };
 
-// CRITICAL: Completely disable animations on mobile
+// Simplified mobile transitions - keep animations but make them simpler
 const getMobileTransition = (isMobile) => {
   if (isMobile) {
-    // NO ANIMATIONS ON MOBILE - return static props
+    // Simple, fast transitions for mobile
     return {
-      // Remove all motion properties
+      initial: { opacity: 0 },
+      animate: { opacity: 1 },
+      exit: { opacity: 0 },
+      transition: { 
+        duration: 0.15, 
+        ease: 'easeOut',
+        type: 'tween'
+      }
     };
   }
   
-  // Full transitions for desktop only
+  // Full transitions for desktop
   return {
     initial: { opacity: 0, y: 10 },
     animate: { opacity: 1, y: 0 },
@@ -91,14 +98,6 @@ const getMobileTransition = (isMobile) => {
       type: 'tween' 
     }
   };
-};
-
-// Static wrapper for mobile (no motion)
-const StaticWrapper = ({ children, isMobile }) => {
-  if (isMobile) {
-    return <div className="mobile-static mobile-no-motion">{children}</div>;
-  }
-  return children;
 };
 
 // App Routes Component
@@ -113,42 +112,21 @@ const AppRoutes = () => {
   // If user is not authenticated, show landing page
   if (!user) {
     return (
-      <StaticWrapper isMobile={isMobile}>
-        <Routes>
-          <Route path="/landing" element={<Landing />} />
-          <Route path="/*" element={<Navigate to="/landing" replace />} />
-        </Routes>
-      </StaticWrapper>
+      <Routes>
+        <Route path="/landing" element={<Landing />} />
+        <Route path="/*" element={<Navigate to="/landing" replace />} />
+      </Routes>
     );
   }
 
   // Get transition config based on device
   const pageTransition = getMobileTransition(isMobile);
 
-  // Mobile: Static rendering without animations
-  if (isMobile) {
-    return (
-      <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 mobile-static">
-        <Navigation />
-        <main className="pt-20 pb-8">
-          <Routes>
-            <Route path="/landing" element={<Navigate to="/" replace />} />
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/recipes" element={<Recipes />} />
-            <Route path="/calendar" element={<Calendar />} />
-            <Route path="/shopping" element={<ShoppingList />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-        </main>
-      </div>
-    );
-  }
-
-  // Desktop: Full animations
+  // Always use animations but simpler on mobile
   return (
     <LazyMotion features={domAnimation}>
-      <MotionConfig reducedMotion="never">
-        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50 vercel-optimized">
+      <MotionConfig reducedMotion={isMobile ? "user" : "never"}>
+        <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-red-50">
           <Navigation />
           <main className="pt-20 pb-8">
             <AnimatePresence mode="wait">
