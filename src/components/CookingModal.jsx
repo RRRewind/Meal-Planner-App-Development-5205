@@ -15,6 +15,16 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
   const [customTime, setCustomTime] = useState(recipe?.prepTime || 30);
   const [timerName, setTimerName] = useState('Cooking Timer');
   const [showTimerSettings, setShowTimerSettings] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth < 768);
+
+  // Check if mobile
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768);
+    };
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // Timer effect
   useEffect(() => {
@@ -33,7 +43,7 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
             }
             // Play sound if available
             try {
-              const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMG');
+              const audio = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMGJHfH8N2QQAoUXrTp66hVFApGn+DyvmYdBjiH0fPTgjMG');
               audio.play();
             } catch (e) {
               console.log('Timer sound not available');
@@ -131,19 +141,30 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
     { label: '30 min', minutes: 30, icon: FiClock }
   ];
 
+  // Mobile-optimized motion props
+  const getMobileMotionProps = (baseProps) => {
+    if (isMobile) {
+      return {
+        initial: { opacity: 0.95 },
+        animate: { opacity: 1 },
+        exit: { opacity: 0.95 },
+        transition: { duration: 0.1, ease: 'linear' },
+        ...baseProps
+      };
+    }
+    return baseProps;
+  };
+
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden"
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 performance-optimized">
+      <div
+        className="bg-white rounded-2xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden vercel-optimized"
+        style={{
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          WebkitTransform: 'translate3d(0, 0, 0)',
+          transform: 'translate3d(0, 0, 0)'
+        }}
       >
         {/* Header */}
         <div className={`bg-gradient-to-r ${getCategoryColor(recipe.category)} p-6 text-white relative overflow-hidden`}>
@@ -180,23 +201,24 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
                 </div>
               </div>
             </div>
-            <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+            <button
               onClick={onClose}
               className="p-2 hover:bg-white hover:bg-opacity-20 rounded-xl transition-colors"
+              style={{
+                WebkitTapHighlightColor: 'transparent',
+                touchAction: 'manipulation'
+              }}
             >
               <SafeIcon icon={FiX} className="w-6 h-6" />
-            </motion.button>
+            </button>
           </div>
 
           {/* Progress Bar */}
           <div className="mt-4 relative">
             <div className="w-full bg-white bg-opacity-20 rounded-full h-2">
-              <motion.div
-                initial={{ width: 0 }}
-                animate={{ width: `${progress}%` }}
+              <div
                 className="h-2 bg-white rounded-full transition-all duration-300"
+                style={{ width: `${progress}%` }}
               />
             </div>
             <div className="text-right text-sm mt-1 text-white text-opacity-90">
@@ -208,7 +230,7 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
         {/* Content */}
         <div className="flex flex-col lg:flex-row h-[calc(90vh-200px)]">
           {/* Left Panel - Ingredients */}
-          <div className="lg:w-1/3 p-6 border-b lg:border-b-0 lg:border-r border-gray-200 overflow-y-auto">
+          <div className="lg:w-1/3 p-6 border-b lg:border-b-0 lg:border-r border-gray-200 overflow-y-auto performance-optimized">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-xl font-bold text-gray-900">Ingredients</h2>
               <span className="text-sm text-gray-500">
@@ -219,36 +241,34 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
               {ingredients.map((ingredient, index) => {
                 const isChecked = checkedIngredients.has(index);
                 return (
-                  <motion.div
+                  <div
                     key={index}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: index * 0.05 }}
                     className={`flex items-center space-x-3 p-3 rounded-xl border-2 transition-all duration-200 cursor-pointer ${
                       isChecked
                         ? 'bg-green-50 border-green-200'
                         : 'bg-gray-50 border-gray-200 hover:border-orange-300'
                     }`}
                     onClick={() => toggleIngredient(index)}
+                    style={{
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation'
+                    }}
                   >
-                    <motion.button
-                      whileHover={{ scale: 1.1 }}
-                      whileTap={{ scale: 0.9 }}
+                    <button
                       className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all duration-200 ${
                         isChecked
                           ? 'bg-green-500 border-green-500'
                           : 'border-gray-300 hover:border-orange-400'
                       }`}
+                      style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                      }}
                     >
                       {isChecked && (
-                        <motion.div
-                          initial={{ scale: 0 }}
-                          animate={{ scale: 1 }}
-                        >
-                          <SafeIcon icon={FiCheck} className="w-3 h-3 text-white" />
-                        </motion.div>
+                        <SafeIcon icon={FiCheck} className="w-3 h-3 text-white" />
                       )}
-                    </motion.button>
+                    </button>
                     <div className="flex-1">
                       <div className={`font-medium transition-all duration-200 ${
                         isChecked ? 'line-through text-gray-500' : 'text-gray-900'
@@ -256,7 +276,7 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
                         {ingredient.quantity} {ingredient.unit} {ingredient.name}
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
@@ -267,121 +287,121 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
               
               {/* Current Timer Display */}
               {timeRemaining > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl border border-orange-200 mb-4"
-                >
+                <div className="bg-gradient-to-r from-orange-50 to-red-50 p-4 rounded-xl border border-orange-200 mb-4">
                   <div className="text-center">
                     <div className="text-2xl font-bold text-gray-900 mb-1">
                       {formatTime(timeRemaining)}
                     </div>
                     <div className="text-sm text-gray-600 mb-3">{timerName}</div>
                     <div className="flex items-center justify-center space-x-2">
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                      <button
                         onClick={() => isTimerActive ? pauseTimer() : setIsTimerActive(true)}
                         className="bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg transition-colors"
+                        style={{
+                          WebkitTapHighlightColor: 'transparent',
+                          touchAction: 'manipulation'
+                        }}
                       >
                         <SafeIcon icon={isTimerActive ? FiPause : FiPlay} className="w-4 h-4" />
-                      </motion.button>
-                      <motion.button
-                        whileHover={{ scale: 1.05 }}
-                        whileTap={{ scale: 0.95 }}
+                      </button>
+                      <button
                         onClick={resetTimer}
                         className="bg-gray-500 hover:bg-gray-600 text-white p-2 rounded-lg transition-colors"
+                        style={{
+                          WebkitTapHighlightColor: 'transparent',
+                          touchAction: 'manipulation'
+                        }}
                       >
                         <SafeIcon icon={FiRotateCcw} className="w-4 h-4" />
-                      </motion.button>
+                      </button>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               )}
 
               {/* Quick Timer Buttons */}
               <div className="grid grid-cols-2 gap-2 mb-4">
                 {quickTimers.map((timer, index) => (
-                  <motion.button
+                  <button
                     key={index}
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
                     onClick={() => startTimer(timer.minutes, timer.label)}
                     className="bg-gray-100 hover:bg-orange-100 p-3 rounded-lg text-sm font-medium text-gray-700 hover:text-orange-700 transition-colors flex items-center justify-center space-x-1"
+                    style={{
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation'
+                    }}
                   >
                     <SafeIcon icon={timer.icon} className="w-3 h-3" />
                     <span>{timer.label}</span>
-                  </motion.button>
+                  </button>
                 ))}
               </div>
 
               {/* Custom Timer */}
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+              <button
                 onClick={() => setShowTimerSettings(!showTimerSettings)}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white p-3 rounded-lg font-medium transition-colors"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
               >
                 Custom Timer
-              </motion.button>
+              </button>
 
               {/* Custom Timer Settings */}
-              <AnimatePresence>
-                {showTimerSettings && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="mt-3 p-3 bg-gray-50 rounded-lg"
-                  >
-                    <div className="flex items-center space-x-2 mb-3">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setCustomTime(Math.max(1, customTime - 1))}
-                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-1 rounded"
-                      >
-                        <SafeIcon icon={FiMinus} className="w-3 h-3" />
-                      </motion.button>
-                      <div className="flex-1 text-center">
-                        <span className="text-lg font-semibold">{customTime} min</span>
-                      </div>
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
-                        onClick={() => setCustomTime(customTime + 1)}
-                        className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-1 rounded"
-                      >
-                        <SafeIcon icon={FiPlus} className="w-3 h-3" />
-                      </motion.button>
-                    </div>
-                    <motion.button
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => startTimer(customTime, `${customTime} Minute Timer`)}
-                      className="w-full bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg font-medium transition-colors"
+              {showTimerSettings && (
+                <div className="mt-3 p-3 bg-gray-50 rounded-lg">
+                  <div className="flex items-center space-x-2 mb-3">
+                    <button
+                      onClick={() => setCustomTime(Math.max(1, customTime - 1))}
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-1 rounded"
+                      style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                      }}
                     >
-                      Start {customTime} Min Timer
-                    </motion.button>
-                  </motion.div>
-                )}
-              </AnimatePresence>
+                      <SafeIcon icon={FiMinus} className="w-3 h-3" />
+                    </button>
+                    <div className="flex-1 text-center">
+                      <span className="text-lg font-semibold">{customTime} min</span>
+                    </div>
+                    <button
+                      onClick={() => setCustomTime(customTime + 1)}
+                      className="bg-gray-300 hover:bg-gray-400 text-gray-700 p-1 rounded"
+                      style={{
+                        WebkitTapHighlightColor: 'transparent',
+                        touchAction: 'manipulation'
+                      }}
+                    >
+                      <SafeIcon icon={FiPlus} className="w-3 h-3" />
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => startTimer(customTime, `${customTime} Minute Timer`)}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white p-2 rounded-lg font-medium transition-colors"
+                    style={{
+                      WebkitTapHighlightColor: 'transparent',
+                      touchAction: 'manipulation'
+                    }}
+                  >
+                    Start {customTime} Min Timer
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Right Panel - Instructions */}
-          <div className="lg:w-2/3 p-6 overflow-y-auto">
+          <div className="lg:w-2/3 p-6 overflow-y-auto performance-optimized">
             <h2 className="text-xl font-bold text-gray-900 mb-4">Instructions</h2>
             <div className="space-y-4">
               {instructions.map((instruction, index) => {
                 const isCompleted = completedSteps.has(index);
                 const isCurrent = index === currentStep;
                 return (
-                  <motion.div
+                  <div
                     key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: index * 0.1 }}
                     className={`p-4 rounded-xl border-2 transition-all duration-200 ${
                       isCompleted
                         ? 'bg-green-50 border-green-200'
@@ -391,9 +411,7 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
                     }`}
                   >
                     <div className="flex items-start space-x-4">
-                      <motion.button
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.9 }}
+                      <button
                         onClick={() => toggleStep(index)}
                         className={`w-8 h-8 rounded-full border-2 flex items-center justify-center font-semibold transition-all duration-200 ${
                           isCompleted
@@ -402,13 +420,17 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
                             ? 'bg-orange-500 border-orange-500 text-white'
                             : 'bg-white border-gray-300 text-gray-600 hover:border-orange-400'
                         }`}
+                        style={{
+                          WebkitTapHighlightColor: 'transparent',
+                          touchAction: 'manipulation'
+                        }}
                       >
                         {isCompleted ? (
                           <SafeIcon icon={FiCheck} className="w-4 h-4" />
                         ) : (
                           <span className="text-sm">{index + 1}</span>
                         )}
-                      </motion.button>
+                      </button>
                       <div className="flex-1">
                         <p className={`transition-all duration-200 ${
                           isCompleted ? 'line-through text-gray-500' : 'text-gray-900'
@@ -416,57 +438,61 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
                           {instruction}
                         </p>
                         {isCurrent && (
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="mt-2 text-sm text-orange-600 font-medium"
-                          >
+                          <div className="mt-2 text-sm text-orange-600 font-medium">
                             Current Step
-                          </motion.div>
+                          </div>
                         )}
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 );
               })}
             </div>
 
             {/* Navigation Buttons */}
             <div className="flex items-center justify-between mt-6 pt-6 border-t border-gray-200">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => setCurrentStep(Math.max(0, currentStep - 1))}
                 disabled={currentStep === 0}
                 className="bg-gray-500 hover:bg-gray-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
               >
                 Previous Step
-              </motion.button>
+              </button>
               
               <div className="text-sm text-gray-600">
                 Step {currentStep + 1} of {totalSteps}
               </div>
 
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => setCurrentStep(Math.min(totalSteps - 1, currentStep + 1))}
                 disabled={currentStep === totalSteps - 1}
                 className="bg-orange-500 hover:bg-orange-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white px-4 py-2 rounded-lg font-medium transition-colors"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
               >
                 Next Step
-              </motion.button>
+              </button>
             </div>
           </div>
         </div>
-      </motion.div>
+      </div>
 
       {/* Floating Timer (when active and modal is closed) */}
       {timeRemaining > 0 && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8, y: 100 }}
-          animate={{ opacity: 1, scale: 1, y: 0 }}
-          className="fixed bottom-6 right-6 bg-white rounded-2xl shadow-2xl border border-orange-200 p-4 z-50"
+        <div
+          className="fixed bottom-6 right-6 bg-white rounded-2xl shadow-2xl border border-orange-200 p-4 z-50 performance-optimized"
+          style={{
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden',
+            WebkitTransform: 'translate3d(0, 0, 0)',
+            transform: 'translate3d(0, 0, 0)'
+          }}
         >
           <div className="text-center">
             <div className="text-xl font-bold text-gray-900 mb-1">
@@ -474,27 +500,31 @@ const CookingModal = ({ recipe, onClose, mealInfo = null }) => {
             </div>
             <div className="text-xs text-gray-600 mb-2">{timerName}</div>
             <div className="flex items-center space-x-2">
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => isTimerActive ? pauseTimer() : setIsTimerActive(true)}
                 className="bg-orange-500 hover:bg-orange-600 text-white p-1.5 rounded-lg transition-colors"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
               >
                 <SafeIcon icon={isTimerActive ? FiPause : FiPlay} className="w-3 h-3" />
-              </motion.button>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              </button>
+              <button
                 onClick={resetTimer}
                 className="bg-gray-500 hover:bg-gray-600 text-white p-1.5 rounded-lg transition-colors"
+                style={{
+                  WebkitTapHighlightColor: 'transparent',
+                  touchAction: 'manipulation'
+                }}
               >
                 <SafeIcon icon={FiX} className="w-3 h-3" />
-              </motion.button>
+              </button>
             </div>
           </div>
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 
