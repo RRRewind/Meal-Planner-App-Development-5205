@@ -21,18 +21,9 @@
   background: #94a3b8;
 }
 
-/* CRITICAL: Mobile-first anti-flicker system */
+/* Smooth transitions */
 * {
-  /* Force hardware acceleration on all elements */
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  /* Stabilize font rendering */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* Prevent layout shifts */
-  will-change: auto;
+  transition: all 0.2s ease;
 }
 
 /* Focus styles */
@@ -44,291 +35,263 @@ select:focus {
   outline-offset: 2px;
 }
 
-/* CRITICAL: iOS Safari specific fixes */
+/* CRITICAL: Fix for iOS text rendering and flickering */
+* {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  /* Force hardware acceleration to prevent flickering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Prevent iOS text size adjustment */
 html {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
-  /* Force hardware acceleration */
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  /* Prevent overscroll */
-  overscroll-behavior: none;
+  /* Stabilize rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
+/* CRITICAL: Fix for iOS Safari flickering during scroll and animations */
 body {
-  /* CRITICAL: Force GPU rendering */
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  /* Stabilize scrolling */
-  -webkit-overflow-scrolling: touch;
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  /* Prevent overscroll bounce on iOS */
   overscroll-behavior: none;
-  /* Prevent bounce */
-  position: fixed;
-  width: 100%;
-  height: 100%;
-  overflow: hidden;
-}
-
-#root {
-  /* Make root scrollable instead of body */
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
-  /* Force GPU layer */
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
 }
 
-/* CRITICAL: Stable gradient text for mobile */
+/* CRITICAL: Stable gradient text class to prevent flickering */
 .gradient-text-stable {
   background: linear-gradient(90deg, #ea580c 0%, #dc2626 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* CRITICAL: Force layer creation to prevent flickering */
-  will-change: transform;
+  /* Force hardware acceleration to prevent flickering */
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  /* Stabilize text rendering */
+  /* Improve text rendering on iOS */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Force compositing layer */
-  isolation: isolate;
+  /* Prevent layout shifts */
+  will-change: auto;
+  /* Stabilize on iOS */
+  -webkit-perspective: 1000;
+  perspective: 1000;
 }
 
-/* CRITICAL: Fix bg-clip-text flickering on mobile */
+/* CRITICAL: Prevent webkit transform flickering */
 .bg-clip-text {
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  /* Force GPU layer */
-  will-change: transform;
+  /* Force hardware acceleration to prevent flickering */
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  /* Stabilize rendering */
+  /* Improve text rendering on iOS */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /* Create stacking context */
-  isolation: isolate;
-  /* Force layer */
-  contain: layout style paint;
+  /* Stabilize rendering */
+  -webkit-perspective: 1000;
+  perspective: 1000;
 }
 
-/* CRITICAL: Mobile-specific optimizations */
+/* Fix for gradient text flickering on iOS */
+.text-transparent {
+  /* Stabilize the gradient text rendering */
+  will-change: auto;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* CRITICAL: Prevent layout shifts during scroll on mobile */
 @media (max-width: 768px) {
-  /* Reduce motion for better performance */
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-  
-  /* Force GPU acceleration on mobile */
   * {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    will-change: auto;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
+    /* Reduce motion blur on mobile */
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
-  
-  /* Optimize gradient elements for mobile */
+
+  /* Specifically fix gradient text on mobile */
   .bg-gradient-to-r,
-  .bg-gradient-to-br,
   .gradient-text-stable {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    will-change: auto;
-    isolation: isolate;
-    contain: layout style paint;
+    /* Force layer creation */
+    will-change: transform;
+    /* Stabilize on mobile */
+    -webkit-perspective: 1000;
+    perspective: 1000;
   }
-  
-  /* Disable complex animations on mobile */
+
+  /* CRITICAL: Optimize motion elements for mobile */
   .motion-reduce {
     animation: none !important;
     transition: none !important;
-    transform: none !important;
   }
-}
 
-/* CRITICAL: High DPI mobile devices */
-@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
-  * {
-    /* Force subpixel rendering */
-    -webkit-font-smoothing: subpixel-antialiased;
-    /* Stabilize transforms */
+  /* Force GPU rendering for all animated elements */
+  [data-framer-name],
+  .framer-motion,
+  .animate-pulse,
+  .animate-spin {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    will-change: transform;
   }
 }
 
-/* CRITICAL: iOS Safari specific fixes */
+/* Animation utilities with mobile optimization */
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 20px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.3s ease-out;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* CRITICAL: Optimize for iOS Safari */
 @supports (-webkit-touch-callout: none) {
-  /* Force GPU rendering for all elements */
-  * {
-    -webkit-transform: translate3d(0, 0, 0);
-    transform: translate3d(0, 0, 0);
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    will-change: auto;
-  }
-  
-  /* Fix gradient text flickering on iOS */
+  /* iOS Safari specific fixes */
   .bg-clip-text,
   .gradient-text-stable {
-    -webkit-font-smoothing: antialiased;
+    /* Force GPU rendering */
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
+    /* Prevent text flickering */
+    -webkit-font-smoothing: subpixel-antialiased;
+    /* Stabilize rendering */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    will-change: auto;
-    isolation: isolate;
-    contain: layout style paint;
+    /* Force layer creation */
+    will-change: transform;
+    -webkit-perspective: 1000;
+    perspective: 1000;
   }
-  
-  /* Fix gradient backgrounds on iOS */
+
+  /* Fix for gradient backgrounds on iOS */
   .bg-gradient-to-r,
   .bg-gradient-to-br {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
-    will-change: auto;
-    isolation: isolate;
+    will-change: transform;
+  }
+
+  /* CRITICAL: Optimize Framer Motion for iOS */
+  [data-framer-name] {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform;
+    -webkit-perspective: 1000;
+    perspective: 1000;
   }
 }
 
 /* CRITICAL: Framer Motion optimization for mobile */
-[data-framer-name] {
+@media (max-width: 768px) {
+  /* Reduce motion for better performance on mobile */
+  @media (prefers-reduced-motion: no-preference) {
+    .framer-motion-element {
+      -webkit-transform: translate3d(0, 0, 0);
+      transform: translate3d(0, 0, 0);
+      -webkit-backface-visibility: hidden;
+      backface-visibility: hidden;
+      will-change: transform;
+    }
+  }
+
+  /* Force reduced motion on slow connections */
+  @media (prefers-reduced-data: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+/* CRITICAL: Fix for Vercel/production specific issues */
+.vercel-optimized {
+  /* Force hardware acceleration */
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
+  /* Optimize for production builds */
   will-change: auto;
+  /* Prevent paint flashing */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* CRITICAL: Motion components optimization */
+/* CRITICAL: Mobile-specific animation fixes */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  /* High DPI mobile devices */
+  * {
+    /* Force subpixel rendering */
+    -webkit-font-smoothing: subpixel-antialiased;
+    /* Stabilize transforms */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* CRITICAL: Specific fixes for motion components */
 .motion-safe {
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
   -webkit-backface-visibility: hidden;
   backface-visibility: hidden;
-  will-change: auto;
 }
 
-/* CRITICAL: Vercel production optimizations */
-.vercel-optimized {
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  will-change: auto;
-  /* Prevent paint flashing */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* Force compositing */
-  isolation: isolate;
-}
-
-/* CRITICAL: Performance optimization for lists */
+/* Performance optimization for lists and grids */
 .performance-optimized {
   contain: layout style paint;
   will-change: auto;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-}
-
-/* CRITICAL: Disable problematic animations on mobile */
-@media (max-width: 768px) {
-  /* Disable scale transforms that cause flickering */
-  .scale-hover:hover {
-    transform: none !important;
-  }
-  
-  /* Simplify motion on mobile */
-  [whileHover] {
-    transform: none !important;
-  }
-  
-  [whileTap] {
-    transform: scale(0.98) !important;
-  }
-}
-
-/* CRITICAL: Force hardware acceleration for interactive elements */
-button,
-.cursor-pointer,
-[role="button"] {
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  will-change: auto;
-  /* Prevent tap highlights */
-  -webkit-tap-highlight-color: transparent;
-  /* Force layer creation */
-  isolation: isolate;
-}
-
-/* CRITICAL: Scrollable container optimizations */
-.overflow-y-auto,
-.overflow-scroll {
-  -webkit-overflow-scrolling: touch;
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  will-change: auto;
-}
-
-/* CRITICAL: Modal and overlay optimizations */
-.fixed {
-  -webkit-transform: translate3d(0, 0, 0);
-  transform: translate3d(0, 0, 0);
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  will-change: auto;
-  /* Force compositing layer */
-  isolation: isolate;
-}
-
-/* CRITICAL: Disable problematic CSS features on mobile */
-@media (max-width: 768px) {
-  /* Disable backdrop-filter which causes flickering */
-  .backdrop-blur-md {
-    backdrop-filter: none !important;
-    background: rgba(255, 255, 255, 0.95) !important;
-  }
-  
-  /* Simplify shadows on mobile */
-  .shadow-2xl,
-  .shadow-xl,
-  .shadow-lg {
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1) !important;
-  }
-  
-  /* Disable complex gradients that cause performance issues */
-  .bg-gradient-to-r {
-    background: #f97316 !important;
-  }
 }

@@ -5,9 +5,8 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import { useMealPlan } from '../context/MealPlanContext';
 import MealPlanModal from '../components/MealPlanModal';
-import CookingModal from '../components/CookingModal';
 
-const { FiChevronLeft, FiChevronRight, FiPlus, FiCoffee, FiSun, FiSunset, FiMoreHorizontal, FiX, FiClock, FiCalendar, FiChef } = FiIcons;
+const { FiChevronLeft, FiChevronRight, FiPlus, FiCoffee, FiSun, FiSunset, FiMoreHorizontal, FiX, FiClock, FiCalendar } = FiIcons;
 
 const Calendar = () => {
   const { currentWeek, setCurrentWeek, getWeekMeals, recipes, removeMealFromPlan } = useMealPlan();
@@ -18,8 +17,6 @@ const Calendar = () => {
   const [currentDayIndex, setCurrentDayIndex] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [isDateSticky, setIsDateSticky] = useState(false);
-  const [selectedRecipe, setSelectedRecipe] = useState(null);
-  const [selectedMealInfo, setSelectedMealInfo] = useState(null);
 
   const weekMeals = getWeekMeals(currentWeek);
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(currentWeek, i));
@@ -165,21 +162,6 @@ const Calendar = () => {
     setShowMealModal(false);
     setSelectedDate(null);
     setSelectedMealType(null);
-  };
-
-  const handleRecipeClick = (recipe, date, mealType) => {
-    if (recipe) {
-      setSelectedRecipe(recipe);
-      setSelectedMealInfo({
-        mealType,
-        date
-      });
-    }
-  };
-
-  const handleCloseCookingModal = () => {
-    setSelectedRecipe(null);
-    setSelectedMealInfo(null);
   };
 
   const isDatePast = (date) => {
@@ -354,9 +336,7 @@ const Calendar = () => {
                           key={`${snack.id}-${index}`}
                           initial={{ opacity: 0, scale: 0.9 }}
                           animate={{ opacity: 1, scale: 1 }}
-                          whileHover={{ scale: 1.02 }}
-                          onClick={() => handleRecipeClick(snack, currentDay, mealType.key)}
-                          className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 relative cursor-pointer hover:from-green-100 hover:to-emerald-100 transition-all duration-200 group"
+                          className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-xl border border-green-200 relative"
                         >
                           <div className="flex items-start justify-between">
                             <div className="flex-1">
@@ -367,27 +347,15 @@ const Calendar = () => {
                                 {snack.prepTime} minutes • {snack.servings} servings
                               </div>
                             </div>
-                            <div className="flex items-center space-x-2">
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                className="opacity-0 group-hover:opacity-100 transition-opacity"
-                              >
-                                <SafeIcon icon={FiChef} className="w-4 h-4 text-green-600" />
-                              </motion.div>
-                              <motion.button
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRemoveMeal(currentDay, mealType.key, snack.id);
-                                }}
-                                className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
-                                style={{ touchAction: 'manipulation' }}
-                              >
-                                <SafeIcon icon={FiX} className="w-4 h-4" />
-                              </motion.button>
-                            </div>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleRemoveMeal(currentDay, mealType.key, snack.id)}
+                              className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+                              style={{ touchAction: 'manipulation' }}
+                            >
+                              <SafeIcon icon={FiX} className="w-4 h-4" />
+                            </motion.button>
                           </div>
                         </motion.div>
                       ))}
@@ -409,9 +377,7 @@ const Calendar = () => {
                     <motion.div
                       initial={{ opacity: 0, scale: 0.9 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      whileHover={{ scale: 1.02 }}
-                      onClick={() => handleRecipeClick(meal, currentDay, mealType.key)}
-                      className="bg-gradient-to-r from-gray-50 to-orange-50 p-4 rounded-xl border border-orange-200 relative cursor-pointer hover:from-orange-50 hover:to-red-50 transition-all duration-200 group"
+                      className="bg-gradient-to-r from-gray-50 to-orange-50 p-4 rounded-xl border border-orange-200 relative"
                     >
                       <div className="flex items-start justify-between">
                         <div className="flex-1">
@@ -425,27 +391,15 @@ const Calendar = () => {
                             {meal.category}
                           </div>
                         </div>
-                        <div className="flex items-center space-x-2">
-                          <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity"
-                          >
-                            <SafeIcon icon={FiChef} className="w-4 h-4 text-orange-600" />
-                          </motion.div>
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleRemoveMeal(currentDay, mealType.key);
-                            }}
-                            className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
-                            style={{ touchAction: 'manipulation' }}
-                          >
-                            <SafeIcon icon={FiX} className="w-4 h-4" />
-                          </motion.button>
-                        </div>
+                        <motion.button
+                          whileHover={{ scale: 1.1 }}
+                          whileTap={{ scale: 0.9 }}
+                          onClick={() => handleRemoveMeal(currentDay, mealType.key)}
+                          className="p-2 bg-red-500 hover:bg-red-600 text-white rounded-full shadow-lg transition-colors"
+                          style={{ touchAction: 'manipulation' }}
+                        >
+                          <SafeIcon icon={FiX} className="w-4 h-4" />
+                        </motion.button>
                       </div>
                     </motion.div>
                   ) : (
@@ -481,7 +435,6 @@ const Calendar = () => {
               <p className="font-medium">Navigation Tips:</p>
               <p>• Use arrow buttons to navigate between days</p>
               <p>• Tap plus buttons to add meals</p>
-              <p>• Tap on meals to view cooking instructions</p>
               <p>• Only current and future dates are shown</p>
             </div>
           </div>
@@ -490,7 +443,7 @@ const Calendar = () => {
     );
   };
 
-  // Desktop Week View (existing code with cooking click handlers)
+  // Desktop Week View (existing code)
   const DesktopWeekView = () => (
     <div className="hidden md:block">
       {/* Header */}
@@ -503,7 +456,7 @@ const Calendar = () => {
           <h1 className="text-4xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent mb-2">
             Meal Calendar
           </h1>
-          <p className="text-gray-600">Plan your weekly meals • Click meals to view cooking instructions</p>
+          <p className="text-gray-600">Plan your weekly meals</p>
         </div>
 
         <div className="flex items-center space-x-4">
@@ -631,10 +584,8 @@ const Calendar = () => {
                             key={`${snack.id}-${index}`}
                             initial={{ opacity: 0, scale: 0.9 }}
                             animate={{ opacity: 1, scale: 1 }}
-                            whileHover={{ scale: 1.02 }}
-                            onClick={() => !isPastDate && handleRecipeClick(snack, day, mealType.key)}
                             className={`bg-gradient-to-r from-green-50 to-emerald-50 p-2 rounded-lg border border-green-200 group relative ${
-                              isPastDate ? 'opacity-70' : 'cursor-pointer hover:from-green-100 hover:to-emerald-100'
+                              isPastDate ? 'opacity-70' : ''
                             }`}
                             onMouseEnter={() => !isPastDate && setHoveredMeal(`${dateKey}-${mealType.key}-${index}`)}
                             onMouseLeave={() => setHoveredMeal(null)}
@@ -647,30 +598,20 @@ const Calendar = () => {
                             </div>
                             <AnimatePresence>
                               {!isPastDate && hoveredMeal === `${dateKey}-${mealType.key}-${index}` && (
-                                <>
-                                  <motion.div
-                                    initial={{ opacity: 0 }}
-                                    animate={{ opacity: 1 }}
-                                    exit={{ opacity: 0 }}
-                                    className="absolute top-1 left-1 w-4 h-4 bg-green-500 rounded-full flex items-center justify-center"
-                                  >
-                                    <SafeIcon icon={FiChef} className="w-2 h-2 text-white" />
-                                  </motion.div>
-                                  <motion.button
-                                    initial={{ opacity: 0, scale: 0.8 }}
-                                    animate={{ opacity: 1, scale: 1 }}
-                                    exit={{ opacity: 0, scale: 0.8 }}
-                                    whileHover={{ scale: 1.1 }}
-                                    whileTap={{ scale: 0.9 }}
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleRemoveMeal(day, mealType.key, snack.id);
-                                    }}
-                                    className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
-                                  >
-                                    <SafeIcon icon={FiX} className="w-3 h-3" />
-                                  </motion.button>
-                                </>
+                                <motion.button
+                                  initial={{ opacity: 0, scale: 0.8 }}
+                                  animate={{ opacity: 1, scale: 1 }}
+                                  exit={{ opacity: 0, scale: 0.8 }}
+                                  whileHover={{ scale: 1.1 }}
+                                  whileTap={{ scale: 0.9 }}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleRemoveMeal(day, mealType.key, snack.id);
+                                  }}
+                                  className="absolute top-1 right-1 w-5 h-5 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                                >
+                                  <SafeIcon icon={FiX} className="w-3 h-3" />
+                                </motion.button>
                               )}
                             </AnimatePresence>
                           </motion.div>
@@ -695,10 +636,8 @@ const Calendar = () => {
                       <motion.div
                         initial={{ opacity: 0, scale: 0.9 }}
                         animate={{ opacity: 1, scale: 1 }}
-                        whileHover={{ scale: 1.02 }}
-                        onClick={() => !isPastDate && handleRecipeClick(meal, day, mealType.key)}
                         className={`bg-gradient-to-r ${mealType.color.replace('to-', 'to-').replace('from-', 'from-').replace('400', '50').replace('500', '100')} p-3 rounded-lg border border-opacity-50 h-full relative group ${
-                          isPastDate ? 'opacity-70' : 'cursor-pointer hover:shadow-md'
+                          isPastDate ? 'opacity-70' : ''
                         }`}
                         onMouseEnter={() => !isPastDate && setHoveredMeal(`${dateKey}-${mealType.key}`)}
                         onMouseLeave={() => setHoveredMeal(null)}
@@ -714,30 +653,20 @@ const Calendar = () => {
                         </div>
                         <AnimatePresence>
                           {!isPastDate && hoveredMeal === `${dateKey}-${mealType.key}` && (
-                            <>
-                              <motion.div
-                                initial={{ opacity: 0 }}
-                                animate={{ opacity: 1 }}
-                                exit={{ opacity: 0 }}
-                                className="absolute top-2 left-2 w-5 h-5 bg-orange-500 rounded-full flex items-center justify-center"
-                              >
-                                <SafeIcon icon={FiChef} className="w-3 h-3 text-white" />
-                              </motion.div>
-                              <motion.button
-                                initial={{ opacity: 0, scale: 0.8 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.8 }}
-                                whileHover={{ scale: 1.1 }}
-                                whileTap={{ scale: 0.9 }}
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleRemoveMeal(day, mealType.key);
-                                }}
-                                className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
-                              >
-                                <SafeIcon icon={FiX} className="w-3 h-3" />
-                              </motion.button>
-                            </>
+                            <motion.button
+                              initial={{ opacity: 0, scale: 0.8 }}
+                              animate={{ opacity: 1, scale: 1 }}
+                              exit={{ opacity: 0, scale: 0.8 }}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleRemoveMeal(day, mealType.key);
+                              }}
+                              className="absolute top-2 right-2 w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded-full flex items-center justify-center shadow-lg transition-colors"
+                            >
+                              <SafeIcon icon={FiX} className="w-3 h-3" />
+                            </motion.button>
                           )}
                         </AnimatePresence>
                       </motion.div>
@@ -794,17 +723,6 @@ const Calendar = () => {
             date={selectedDate}
             mealType={selectedMealType}
             onClose={handleCloseModal}
-          />
-        )}
-      </AnimatePresence>
-
-      {/* Cooking Modal */}
-      <AnimatePresence>
-        {selectedRecipe && (
-          <CookingModal
-            recipe={selectedRecipe}
-            mealInfo={selectedMealInfo}
-            onClose={handleCloseCookingModal}
           />
         )}
       </AnimatePresence>
