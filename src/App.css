@@ -35,27 +35,38 @@ select:focus {
   outline-offset: 2px;
 }
 
-/* Fix for iOS text rendering and flickering */
+/* CRITICAL: Fix for iOS text rendering and flickering */
 * {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Force hardware acceleration to prevent flickering */
+  -webkit-transform: translateZ(0);
+  transform: translateZ(0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
 /* Prevent iOS text size adjustment */
 html {
   -webkit-text-size-adjust: 100%;
   -ms-text-size-adjust: 100%;
+  /* Stabilize rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
-/* Fix for iOS Safari flickering during scroll */
+/* CRITICAL: Fix for iOS Safari flickering during scroll and animations */
 body {
   -webkit-backface-visibility: hidden;
   -webkit-transform: translateZ(0);
   transform: translateZ(0);
+  /* Prevent overscroll bounce on iOS */
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Stable gradient text class to prevent flickering */
+/* CRITICAL: Stable gradient text class to prevent flickering */
 .gradient-text-stable {
   background: linear-gradient(90deg, #ea580c 0%, #dc2626 100%);
   -webkit-background-clip: text;
@@ -71,9 +82,12 @@ body {
   -moz-osx-font-smoothing: grayscale;
   /* Prevent layout shifts */
   will-change: auto;
+  /* Stabilize on iOS */
+  -webkit-perspective: 1000;
+  perspective: 1000;
 }
 
-/* Prevent webkit transform flickering */
+/* CRITICAL: Prevent webkit transform flickering */
 .bg-clip-text {
   -webkit-background-clip: text;
   background-clip: text;
@@ -86,6 +100,9 @@ body {
   /* Improve text rendering on iOS */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Stabilize rendering */
+  -webkit-perspective: 1000;
+  perspective: 1000;
 }
 
 /* Fix for gradient text flickering on iOS */
@@ -94,17 +111,22 @@ body {
   will-change: auto;
   -webkit-transform: translate3d(0, 0, 0);
   transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 
-/* Prevent layout shifts during scroll on mobile */
+/* CRITICAL: Prevent layout shifts during scroll on mobile */
 @media (max-width: 768px) {
   * {
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
     -webkit-transform: translateZ(0);
     transform: translateZ(0);
+    /* Reduce motion blur on mobile */
+    -webkit-filter: blur(0);
+    filter: blur(0);
   }
-  
+
   /* Specifically fix gradient text on mobile */
   .bg-gradient-to-r,
   .gradient-text-stable {
@@ -112,33 +134,54 @@ body {
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    /* Force layer creation */
+    will-change: transform;
+    /* Stabilize on mobile */
+    -webkit-perspective: 1000;
+    perspective: 1000;
   }
-  
-  /* Optimize motion elements for mobile */
+
+  /* CRITICAL: Optimize motion elements for mobile */
   .motion-reduce {
     animation: none !important;
     transition: none !important;
   }
+
+  /* Force GPU rendering for all animated elements */
+  [data-framer-name],
+  .framer-motion,
+  .animate-pulse,
+  .animate-spin {
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    will-change: transform;
+  }
 }
 
-/* Animation utilities */
+/* Animation utilities with mobile optimization */
 .slide-up {
   animation: slideUp 0.3s ease-out;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translate3d(0, 20px, 0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translate3d(0, 0, 0);
   }
 }
 
 .fade-in {
   animation: fadeIn 0.3s ease-out;
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
 }
 
 @keyframes fadeIn {
@@ -150,7 +193,7 @@ body {
   }
 }
 
-/* Optimize for iOS Safari */
+/* CRITICAL: Optimize for iOS Safari */
 @supports (-webkit-touch-callout: none) {
   /* iOS Safari specific fixes */
   .bg-clip-text,
@@ -163,8 +206,12 @@ body {
     /* Stabilize rendering */
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    /* Force layer creation */
+    will-change: transform;
+    -webkit-perspective: 1000;
+    perspective: 1000;
   }
-  
+
   /* Fix for gradient backgrounds on iOS */
   .bg-gradient-to-r,
   .bg-gradient-to-br {
@@ -172,18 +219,22 @@ body {
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    will-change: transform;
   }
-  
-  /* Optimize Framer Motion for iOS */
+
+  /* CRITICAL: Optimize Framer Motion for iOS */
   [data-framer-name] {
     -webkit-transform: translate3d(0, 0, 0);
     transform: translate3d(0, 0, 0);
     -webkit-backface-visibility: hidden;
     backface-visibility: hidden;
+    will-change: transform;
+    -webkit-perspective: 1000;
+    perspective: 1000;
   }
 }
 
-/* Framer Motion optimization for mobile */
+/* CRITICAL: Framer Motion optimization for mobile */
 @media (max-width: 768px) {
   /* Reduce motion for better performance on mobile */
   @media (prefers-reduced-motion: no-preference) {
@@ -192,6 +243,55 @@ body {
       transform: translate3d(0, 0, 0);
       -webkit-backface-visibility: hidden;
       backface-visibility: hidden;
+      will-change: transform;
     }
   }
+
+  /* Force reduced motion on slow connections */
+  @media (prefers-reduced-data: reduce) {
+    * {
+      animation: none !important;
+      transition: none !important;
+    }
+  }
+}
+
+/* CRITICAL: Fix for Vercel/production specific issues */
+.vercel-optimized {
+  /* Force hardware acceleration */
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* Optimize for production builds */
+  will-change: auto;
+  /* Prevent paint flashing */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* CRITICAL: Mobile-specific animation fixes */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 2) {
+  /* High DPI mobile devices */
+  * {
+    /* Force subpixel rendering */
+    -webkit-font-smoothing: subpixel-antialiased;
+    /* Stabilize transforms */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+/* CRITICAL: Specific fixes for motion components */
+.motion-safe {
+  -webkit-transform: translate3d(0, 0, 0);
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+/* Performance optimization for lists and grids */
+.performance-optimized {
+  contain: layout style paint;
+  will-change: auto;
 }

@@ -25,7 +25,6 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
   const handleGoogleSignIn = async () => {
     setLoading(true)
     setError('')
-    
     try {
       const result = await signInWithGoogle()
       if (!result.success) {
@@ -35,7 +34,6 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
       setError('Google sign-in is not available. Please use email authentication.')
       console.error('Google auth error:', err)
     }
-    
     setLoading(false)
   }
 
@@ -52,7 +50,6 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
         setLoading(false)
         return
       }
-      
       if (formData.password.length < 6) {
         setError('Password must be at least 6 characters')
         setLoading(false)
@@ -64,7 +61,6 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
         formData.password,
         formData.fullName
       )
-
       if (result.success) {
         setSuccess('Account created successfully! Please check your email to verify your account.')
         setFormData({ email: '', password: '', fullName: '', confirmPassword: '' })
@@ -74,14 +70,12 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
     } else {
       // Sign in
       const result = await signInWithEmail(formData.email, formData.password)
-      
       if (result.success) {
         onClose()
       } else {
         setError(result.error)
       }
     }
-
     setLoading(false)
   }
 
@@ -98,14 +92,35 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
+      transition={{ duration: 0.2, ease: 'easeOut' }}
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-start sm:items-center justify-center p-4 z-50 overflow-y-auto motion-safe"
       onClick={(e) => e.target === e.currentTarget && onClose()}
+      style={{ 
+        WebkitBackfaceVisibility: 'hidden',
+        backfaceVisibility: 'hidden',
+        WebkitTransform: 'translate3d(0, 0, 0)',
+        transform: 'translate3d(0, 0, 0)'
+      }}
     >
       <motion.div
-        initial={{ scale: 0.9, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        exit={{ scale: 0.9, opacity: 0 }}
-        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden"
+        initial={{ scale: 0.95, opacity: 0, y: 10 }}
+        animate={{ scale: 1, opacity: 1, y: 0 }}
+        exit={{ scale: 0.95, opacity: 0, y: 10 }}
+        transition={{ 
+          duration: 0.2, 
+          ease: 'easeOut',
+          type: 'spring',
+          damping: 25,
+          stiffness: 300
+        }}
+        className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden mt-4 sm:mt-0 mb-4 sm:mb-0 motion-safe vercel-optimized"
+        style={{ 
+          maxHeight: 'calc(100vh - 2rem)',
+          WebkitBackfaceVisibility: 'hidden',
+          backfaceVisibility: 'hidden',
+          WebkitTransform: 'translate3d(0, 0, 0)',
+          transform: 'translate3d(0, 0, 0)'
+        }}
       >
         {/* Header */}
         <div className="p-6 border-b border-gray-200">
@@ -114,10 +129,15 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
               {activeTab === 'signin' ? 'Welcome Back' : 'Create Account'}
             </h2>
             <motion.button
-              whileHover={{ scale: 1.1 }}
-              whileTap={{ scale: 0.9 }}
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              transition={{ duration: 0.1 }}
               onClick={onClose}
-              className="p-2 hover:bg-gray-100 rounded-xl transition-colors"
+              className="p-2 hover:bg-gray-100 rounded-xl transition-colors motion-safe"
+              style={{ 
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden'
+              }}
             >
               <SafeIcon icon={FiX} className="w-6 h-6 text-gray-600" />
             </motion.button>
@@ -127,36 +147,57 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
           <div className="flex mt-4 bg-gray-100 rounded-xl p-1">
             <button
               onClick={() => setActiveTab('signin')}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all motion-safe ${
                 activeTab === 'signin'
                   ? 'bg-white text-orange-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
+              style={{ 
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden'
+              }}
             >
               Sign In
             </button>
             <button
               onClick={() => setActiveTab('signup')}
-              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all ${
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-all motion-safe ${
                 activeTab === 'signup'
                   ? 'bg-white text-orange-600 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
+              style={{ 
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden'
+              }}
             >
               Sign Up
             </button>
           </div>
         </div>
 
-        {/* Content */}
-        <div className="p-6">
+        {/* Content - Scrollable on mobile */}
+        <div 
+          className="p-6 overflow-y-auto motion-safe" 
+          style={{ 
+            maxHeight: 'calc(100vh - 200px)',
+            WebkitOverflowScrolling: 'touch',
+            WebkitBackfaceVisibility: 'hidden',
+            backfaceVisibility: 'hidden'
+          }}
+        >
           {/* Google Sign In - Only show if properly configured */}
           <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
+            whileHover={{ scale: 1.01 }}
+            whileTap={{ scale: 0.99 }}
+            transition={{ duration: 0.1 }}
             onClick={handleGoogleSignIn}
             disabled={loading}
-            className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 px-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center space-x-3 mb-6"
+            className="w-full bg-white border-2 border-gray-300 text-gray-700 py-3 px-4 rounded-xl font-semibold hover:bg-gray-50 transition-colors flex items-center justify-center space-x-3 mb-6 motion-safe"
+            style={{ 
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden'
+            }}
           >
             <svg className="w-5 h-5" viewBox="0 0 24 24">
               <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -178,23 +219,25 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
           </div>
 
           {/* Error/Success Messages */}
-          <AnimatePresence>
+          <AnimatePresence mode="wait">
             {error && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4"
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.15 }}
+                className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4 motion-safe"
               >
                 {error}
               </motion.div>
             )}
             {success && (
               <motion.div
-                initial={{ opacity: 0, y: -10 }}
+                initial={{ opacity: 0, y: -5 }}
                 animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4"
+                exit={{ opacity: 0, y: -5 }}
+                transition={{ duration: 0.15 }}
+                className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4 motion-safe"
               >
                 {success}
               </motion.div>
@@ -214,8 +257,12 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
                     type="text"
                     value={formData.fullName}
                     onChange={(e) => handleInputChange('fullName', e.target.value)}
-                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all motion-safe"
                     placeholder="Enter your full name"
+                    style={{ 
+                      WebkitBackfaceVisibility: 'hidden',
+                      backfaceVisibility: 'hidden'
+                    }}
                   />
                 </div>
               </div>
@@ -232,8 +279,12 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
                   required
                   value={formData.email}
                   onChange={(e) => handleInputChange('email', e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all motion-safe"
                   placeholder="Enter your email"
+                  style={{ 
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden'
+                  }}
                 />
               </div>
             </div>
@@ -249,13 +300,21 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
                   required
                   value={formData.password}
                   onChange={(e) => handleInputChange('password', e.target.value)}
-                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                  className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all motion-safe"
                   placeholder="Enter your password"
+                  style={{ 
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden'
+                  }}
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 motion-safe"
+                  style={{ 
+                    WebkitBackfaceVisibility: 'hidden',
+                    backfaceVisibility: 'hidden'
+                  }}
                 >
                   <SafeIcon icon={showPassword ? FiEyeOff : FiEye} className="w-5 h-5" />
                 </button>
@@ -274,13 +333,21 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
                     required
                     value={formData.confirmPassword}
                     onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
-                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all"
+                    className="w-full pl-10 pr-12 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all motion-safe"
                     placeholder="Confirm your password"
+                    style={{ 
+                      WebkitBackfaceVisibility: 'hidden',
+                      backfaceVisibility: 'hidden'
+                    }}
                   />
                   <button
                     type="button"
                     onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 motion-safe"
+                    style={{ 
+                      WebkitBackfaceVisibility: 'hidden',
+                      backfaceVisibility: 'hidden'
+                    }}
                   >
                     <SafeIcon icon={showConfirmPassword ? FiEyeOff : FiEye} className="w-5 h-5" />
                   </button>
@@ -289,11 +356,16 @@ const AuthModal = ({ isOpen, onClose, defaultTab = 'signin' }) => {
             )}
 
             <motion.button
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
+              whileHover={{ scale: 1.01 }}
+              whileTap={{ scale: 0.99 }}
+              transition={{ duration: 0.1 }}
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 rounded-xl font-semibold shadow-lg hover:shadow-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed motion-safe"
+              style={{ 
+                WebkitBackfaceVisibility: 'hidden',
+                backfaceVisibility: 'hidden'
+              }}
             >
               {loading ? 'Please wait...' : (activeTab === 'signin' ? 'Sign In' : 'Create Account')}
             </motion.button>
