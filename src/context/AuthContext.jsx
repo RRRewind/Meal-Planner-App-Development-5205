@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase'
+import { scheduleAutoCleanup } from '../lib/dataCleanup'
 
 const AuthContext = createContext()
 
@@ -15,6 +16,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [session, setSession] = useState(null)
+  const [cleanupInterval, setCleanupInterval] = useState(null)
 
   useEffect(() => {
     let mounted = true
@@ -23,14 +25,18 @@ export const AuthProvider = ({ children }) => {
     const getInitialSession = async () => {
       try {
         const { data: { session }, error } = await supabase.auth.getSession()
-        
         if (error) {
           console.error('Error getting session:', error)
         }
-        
         if (mounted) {
           setSession(session)
           setUser(session?.user ?? null)
+
+          // Schedule auto-cleanup for logged-in users
+          if (session?.user) {
+            const interval = scheduleAutoCleanup(session.user.id, 24)
+            setCleanupInterval(interval)
+          }
         }
       } catch (error) {
         console.error('Auth initialization error:', error)
@@ -47,7 +53,6 @@ export const AuthProvider = ({ children }) => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('🔄 Auth state change:', event, session?.user?.email || 'No user')
-        
         if (mounted) {
           setSession(session)
           setUser(session?.user ?? null)
@@ -57,7 +62,14 @@ export const AuthProvider = ({ children }) => {
           if (event === 'SIGNED_IN' && session?.user) {
             console.log('✅ User signed in:', session.user.email)
             await handleUserSignIn(session.user)
-            
+
+            // Schedule auto-cleanup for the user
+            if (cleanupInterval) {
+              clearInterval(cleanupInterval)
+            }
+            const interval = scheduleAutoCleanup(session.user.id, 24)
+            setCleanupInterval(interval)
+
             // Clean up URL after OAuth callback
             if (window.location.search.includes('code=') || window.location.search.includes('access_token=')) {
               window.history.replaceState({}, document.title, window.location.pathname + window.location.hash)
@@ -67,7 +79,15 @@ export const AuthProvider = ({ children }) => {
           // Handle sign out
           if (event === 'SIGNED_OUT') {
             console.log('🚪 User signed out - clearing data')
+            
+            // Clear cleanup interval
+            if (cleanupInterval) {
+              clearInterval(cleanupInterval)
+              setCleanupInterval(null)
+            }
+
             clearLocalData()
+
             // Force redirect to landing page
             if (window.location.hash !== '#/landing') {
               window.location.hash = '#/landing'
@@ -81,13 +101,15 @@ export const AuthProvider = ({ children }) => {
     return () => {
       mounted = false
       subscription.unsubscribe()
+      if (cleanupInterval) {
+        clearInterval(cleanupInterval)
+      }
     }
   }, [])
 
   const clearLocalData = () => {
     try {
       console.log('🧹 Clearing local data...')
-      
       // Clear all possible localStorage keys
       const keysToRemove = [
         'mealPlannerRecipes',
@@ -97,7 +119,7 @@ export const AuthProvider = ({ children }) => {
         'supabase.session',
         'sb-session'
       ]
-      
+
       // Clear localStorage
       keysToRemove.forEach(key => {
         try {
@@ -176,7 +198,6 @@ export const AuthProvider = ({ children }) => {
     if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
       return `${window.location.origin}/#/`
     }
-    
     // For production, use the actual domain
     return `${window.location.origin}/#/`
   }
@@ -185,7 +206,7 @@ export const AuthProvider = ({ children }) => {
     try {
       const redirectUrl = getRedirectUrl()
       console.log('🔗 Google OAuth redirect URL:', redirectUrl)
-      
+
       const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
@@ -198,7 +219,6 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
-      
       return { success: true, data }
     } catch (error) {
       console.error('Google sign in error:', error)
@@ -217,7 +237,6 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
-      
       return { success: true, data }
     } catch (error) {
       console.error('Email sign in error:', error)
@@ -238,7 +257,6 @@ export const AuthProvider = ({ children }) => {
       })
 
       if (error) throw error
-      
       return { success: true, data }
     } catch (error) {
       console.error('Email sign up error:', error)
@@ -248,42 +266,46 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     console.log('🚪 Sign out initiated...')
-    
     try {
+      // Clear cleanup interval
+      if (cleanupInterval) {
+        clearInterval(cleanupInterval)
+        setCleanupInterval(null)
+      }
+
       // Clear local state immediately
       setUser(null)
       setSession(null)
-      
+
       // Clear local data
       clearLocalData()
-      
+
       // Sign out from Supabase (this will trigger the auth state change)
       const { error } = await supabase.auth.signOut()
-      
+
       if (error) {
         console.error('Supabase sign out error:', error)
         // Continue with local sign out even if Supabase fails
       }
 
       console.log('✅ Sign out process completed')
-      
+
       // Force immediate redirect
       window.location.hash = '#/landing'
       window.location.reload()
-      
+
       return { success: true }
     } catch (error) {
       console.error('❌ Sign out error:', error)
-      
       // Force local sign out even on error
       setUser(null)
       setSession(null)
       clearLocalData()
-      
+
       // Still redirect
       window.location.hash = '#/landing'
       window.location.reload()
-      
+
       return { success: false, error: error.message }
     }
   }
@@ -300,7 +322,6 @@ export const AuthProvider = ({ children }) => {
         .eq('id', user.id)
 
       if (error) throw error
-      
       return { success: true }
     } catch (error) {
       console.error('Profile update error:', error)

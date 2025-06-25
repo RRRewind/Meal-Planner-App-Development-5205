@@ -15,6 +15,8 @@ const RecipeForm = ({ recipe, onClose }) => {
     description: '',
     category: '',
     prepTime: '',
+    cookTime: '',
+    chillTime: '',
     servings: '',
     ingredients: [{ name: '', quantity: '', unit: '', category: 'Other' }],
     instructions: ['']
@@ -29,6 +31,8 @@ const RecipeForm = ({ recipe, onClose }) => {
         description: recipe.description || '',
         category: recipe.category || '',
         prepTime: recipe.prepTime || '',
+        cookTime: recipe.cookTime || recipe.cook_time || '',
+        chillTime: recipe.chillTime || recipe.chill_time || '',
         servings: recipe.servings || '',
         ingredients: recipe.ingredients || [{ name: '', quantity: '', unit: '', category: 'Other' }],
         instructions: recipe.instructions || ['']
@@ -37,16 +41,30 @@ const RecipeForm = ({ recipe, onClose }) => {
   }, [recipe]);
 
   const categories = [
-    'Breakfast', 'Lunch', 'Dinner', 'Snack', 'Dessert', 'Appetizer', 
-    'Soup', 'Salad', 'Main Course', 'Side Dish', 'Beverage'
+    'Breakfast',
+    'Lunch', 
+    'Dinner',
+    'Snack',
+    'Dessert',
+    'Appetizer',
+    'Soup',
+    'Salad',
+    'Main Course',
+    'Side Dish',
+    'Beverage'
   ];
 
   const ingredientCategories = [
-    'Produce', 'Meat & Seafood', 'Dairy', 'Pantry', 'Spices', 'Other'
+    'Produce',
+    'Meat & Seafood',
+    'Dairy',
+    'Pantry',
+    'Spices',
+    'Other'
   ];
 
   const commonUnits = [
-    'cup', 'cups', 'tbsp', 'tsp', 'oz', 'lb', 'g', 'kg', 'ml', 'l', 
+    'cup', 'cups', 'tbsp', 'tsp', 'oz', 'lb', 'g', 'kg', 'ml', 'l',
     'piece', 'pieces', 'clove', 'cloves', 'bunch', 'can', 'package'
   ];
 
@@ -63,6 +81,15 @@ const RecipeForm = ({ recipe, onClose }) => {
 
     if (!formData.prepTime || formData.prepTime <= 0) {
       newErrors.prepTime = 'Valid prep time is required';
+    }
+
+    // Cook time and chill time are optional, but if provided must be valid
+    if (formData.cookTime && formData.cookTime < 0) {
+      newErrors.cookTime = 'Cook time must be 0 or greater';
+    }
+
+    if (formData.chillTime && formData.chillTime < 0) {
+      newErrors.chillTime = 'Chill time must be 0 or greater';
     }
 
     if (!formData.servings || formData.servings <= 0) {
@@ -83,7 +110,6 @@ const RecipeForm = ({ recipe, onClose }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    
     if (!validateForm()) {
       return;
     }
@@ -91,6 +117,8 @@ const RecipeForm = ({ recipe, onClose }) => {
     const recipeData = {
       ...formData,
       prepTime: parseInt(formData.prepTime),
+      cookTime: formData.cookTime ? parseInt(formData.cookTime) : 0,
+      chillTime: formData.chillTime ? parseInt(formData.chillTime) : 0,
       servings: parseInt(formData.servings),
       ingredients: formData.ingredients.map(ing => ({
         ...ing,
@@ -151,6 +179,14 @@ const RecipeForm = ({ recipe, onClose }) => {
         i === index ? value : inst
       )
     }));
+  };
+
+  // Calculate total time
+  const getTotalTime = () => {
+    const prep = parseInt(formData.prepTime) || 0;
+    const cook = parseInt(formData.cookTime) || 0;
+    const chill = parseInt(formData.chillTime) || 0;
+    return prep + cook + chill;
   };
 
   return (
@@ -241,6 +277,45 @@ const RecipeForm = ({ recipe, onClose }) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Cook Time (minutes)
+                  <span className="text-gray-500 text-xs ml-1">optional</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.cookTime}
+                  onChange={(e) => setFormData(prev => ({ ...prev, cookTime: e.target.value }))}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                    errors.cookTime ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="45"
+                />
+                {errors.cookTime && <p className="text-red-500 text-sm mt-1">{errors.cookTime}</p>}
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Chill Time (minutes)
+                  <span className="text-gray-500 text-xs ml-1">optional</span>
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={formData.chillTime}
+                  onChange={(e) => setFormData(prev => ({ ...prev, chillTime: e.target.value }))}
+                  className={`w-full px-4 py-3 border rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all ${
+                    errors.chillTime ? 'border-red-500' : 'border-gray-300'
+                  }`}
+                  placeholder="60"
+                />
+                {errors.chillTime && <p className="text-red-500 text-sm mt-1">{errors.chillTime}</p>}
+                <p className="text-xs text-gray-500 mt-1">
+                  For refrigeration, freezing, or resting time
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
                   Servings *
                 </label>
                 <input
@@ -256,6 +331,31 @@ const RecipeForm = ({ recipe, onClose }) => {
                 {errors.servings && <p className="text-red-500 text-sm mt-1">{errors.servings}</p>}
               </div>
             </div>
+
+            {/* Total Time Display */}
+            {(formData.prepTime || formData.cookTime || formData.chillTime) && (
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 border border-blue-200 rounded-xl p-4">
+                <h4 className="text-sm font-semibold text-blue-800 mb-2">Total Time Breakdown</h4>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                  <div className="text-center">
+                    <div className="font-medium text-gray-900">{formData.prepTime || 0}m</div>
+                    <div className="text-gray-600">Prep</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-medium text-gray-900">{formData.cookTime || 0}m</div>
+                    <div className="text-gray-600">Cook</div>
+                  </div>
+                  <div className="text-center">
+                    <div className="font-medium text-gray-900">{formData.chillTime || 0}m</div>
+                    <div className="text-gray-600">Chill</div>
+                  </div>
+                  <div className="text-center border-l border-blue-200 pl-4">
+                    <div className="font-bold text-blue-800 text-lg">{getTotalTime()}m</div>
+                    <div className="text-blue-600">Total</div>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Description */}
             <div>

@@ -8,7 +8,7 @@ import { useMealPlan } from '../context/MealPlanContext';
 import { useAuth } from '../context/AuthContext';
 import CookingMode from '../components/CookingMode';
 
-const { FiSun, FiCoffee, FiSunset, FiMoreHorizontal, FiClock, FiCalendar, FiTrendingUp, FiPlus, FiPlay } = FiIcons;
+const { FiSun, FiCoffee, FiSunset, FiMoreHorizontal, FiClock, FiCalendar, FiTrendingUp, FiPlus, FiPlay, FiThermometer, FiSnowflake } = FiIcons;
 
 const Dashboard = () => {
   const { getUpcomingMeals, recipes, getShoppingList } = useMealPlan();
@@ -49,6 +49,23 @@ const Dashboard = () => {
   const handleStartCooking = (recipe) => {
     setSelectedRecipe(recipe);
     setShowCookingMode(true);
+  };
+
+  // Get time display for recipe
+  const getTimeDisplay = (recipe) => {
+    const prepTime = recipe?.prepTime || recipe?.prep_time || 0;
+    const cookTime = recipe?.cookTime || recipe?.cook_time || 0;
+    const chillTime = recipe?.chillTime || recipe?.chill_time || 0;
+    const totalTime = prepTime + cookTime + chillTime;
+
+    if (totalTime === 0) return `${prepTime}m`;
+
+    const parts = [];
+    if (prepTime > 0) parts.push(`${prepTime}m prep`);
+    if (cookTime > 0) parts.push(`${cookTime}m cook`);
+    if (chillTime > 0) parts.push(`${chillTime}m chill`);
+
+    return parts.length > 1 ? `${totalTime}m total` : parts[0] || `${prepTime}m`;
   };
 
   const todaysMeals = upcomingMeals.filter(meal => isToday(meal.date));
@@ -161,7 +178,7 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center space-x-2 flex-shrink-0">
                       <div className="text-xs md:text-sm text-gray-500 hidden sm:block">
-                        {meal.recipe?.prepTime || meal.recipe?.prep_time || 0}m
+                        {getTimeDisplay(meal.recipe)}
                       </div>
                       <motion.button
                         whileHover={{ scale: 1.05 }}
@@ -228,7 +245,7 @@ const Dashboard = () => {
                     </div>
                     <div className="flex items-center space-x-2 flex-shrink-0">
                       <div className="text-xs md:text-sm text-gray-500 hidden sm:block">
-                        {meal.recipe?.prepTime || meal.recipe?.prep_time || 0}m
+                        {getTimeDisplay(meal.recipe)}
                       </div>
                       <motion.button
                         whileHover={{ scale: 1.05 }}

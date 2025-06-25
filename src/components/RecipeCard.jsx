@@ -4,7 +4,7 @@ import * as FiIcons from 'react-icons/fi';
 import SafeIcon from '../common/SafeIcon';
 import CookingMode from './CookingMode';
 
-const { FiClock, FiUsers, FiEdit3, FiTrash2, FiChefHat, FiPlay } = FiIcons;
+const { FiClock, FiUsers, FiEdit3, FiTrash2, FiChefHat, FiPlay, FiThermometer, FiSnowflake } = FiIcons;
 
 const RecipeCard = ({ recipe, onEdit, onDelete }) => {
   const [showCookingMode, setShowCookingMode] = useState(false);
@@ -18,6 +18,8 @@ const RecipeCard = ({ recipe, onEdit, onDelete }) => {
   const description = recipe.description || '';
   const category = recipe.category || 'Other';
   const prepTime = recipe.prepTime || recipe.prep_time || 0;
+  const cookTime = recipe.cookTime || recipe.cook_time || 0;
+  const chillTime = recipe.chillTime || recipe.chill_time || 0;
   const servings = recipe.servings || 1;
   const ingredients = Array.isArray(recipe.ingredients) ? recipe.ingredients : [];
 
@@ -54,6 +56,23 @@ const RecipeCard = ({ recipe, onEdit, onDelete }) => {
     setShowCookingMode(true);
   };
 
+  // Calculate total time
+  const getTotalTime = () => {
+    return prepTime + cookTime + chillTime;
+  };
+
+  // Get time breakdown for display
+  const getTimeBreakdown = () => {
+    const times = [];
+    if (prepTime > 0) times.push({ label: 'prep', value: prepTime, icon: FiClock });
+    if (cookTime > 0) times.push({ label: 'cook', value: cookTime, icon: FiThermometer });
+    if (chillTime > 0) times.push({ label: 'chill', value: chillTime, icon: FiSnowflake });
+    return times;
+  };
+
+  const timeBreakdown = getTimeBreakdown();
+  const totalTime = getTotalTime();
+
   return (
     <>
       <motion.div
@@ -84,14 +103,31 @@ const RecipeCard = ({ recipe, onEdit, onDelete }) => {
           {/* Recipe Stats */}
           <div className="flex items-center justify-between mb-4 text-sm text-gray-600">
             <div className="flex items-center space-x-1">
-              <SafeIcon icon={FiClock} className="w-4 h-4" />
-              <span>{prepTime} min</span>
-            </div>
-            <div className="flex items-center space-x-1">
               <SafeIcon icon={FiUsers} className="w-4 h-4" />
               <span>{servings} servings</span>
             </div>
+            {totalTime > 0 && (
+              <div className="flex items-center space-x-1">
+                <SafeIcon icon={FiClock} className="w-4 h-4" />
+                <span>{totalTime} min total</span>
+              </div>
+            )}
           </div>
+
+          {/* Time Breakdown */}
+          {timeBreakdown.length > 0 && (
+            <div className="mb-4">
+              <h4 className="font-semibold text-gray-900 mb-2 text-sm">Time Breakdown</h4>
+              <div className="flex items-center space-x-4 text-xs">
+                {timeBreakdown.map((time, index) => (
+                  <div key={time.label} className="flex items-center space-x-1 text-gray-600">
+                    <SafeIcon icon={time.icon} className="w-3 h-3" />
+                    <span>{time.value}m {time.label}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {/* Ingredients Preview */}
           <div className="mb-4">

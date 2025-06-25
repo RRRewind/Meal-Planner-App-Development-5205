@@ -8,9 +8,11 @@ import Recipes from './pages/Recipes';
 import Calendar from './pages/Calendar';
 import ShoppingList from './pages/ShoppingList';
 import FloatingTimer from './components/FloatingTimer';
+import ImportRecipeModal from './components/ImportRecipeModal';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { MealPlanProvider } from './context/MealPlanContext';
 import { TimerProvider } from './context/TimerContext';
+import { useRecipeImporter } from './hooks/useRecipeImporter';
 import './App.css';
 
 // Loading Component
@@ -59,6 +61,7 @@ const useIsMobile = () => {
     const checkMobile = () => {
       setIsMobile(window.innerWidth < 768);
     };
+
     checkMobile();
     window.addEventListener('resize', checkMobile);
     return () => window.removeEventListener('resize', checkMobile);
@@ -91,6 +94,7 @@ const getMobileTransition = (isMobile) => {
 const AppRoutes = () => {
   const { user, loading } = useAuth();
   const isMobile = useIsMobile();
+  const { importRequest, isImporting, clearImportRequest } = useRecipeImporter();
 
   if (loading) {
     return <LoadingScreen />;
@@ -99,10 +103,23 @@ const AppRoutes = () => {
   // If user is not authenticated, show landing page
   if (!user) {
     return (
-      <Routes>
-        <Route path="/landing" element={<Landing />} />
-        <Route path="/*" element={<Navigate to="/landing" replace />} />
-      </Routes>
+      <>
+        <Routes>
+          <Route path="/landing" element={<Landing />} />
+          <Route path="/*" element={<Navigate to="/landing" replace />} />
+        </Routes>
+        
+        {/* Recipe Import Modal - Available on landing page too */}
+        <AnimatePresence>
+          {isImporting && importRequest && (
+            <ImportRecipeModal
+              isOpen={isImporting}
+              onClose={clearImportRequest}
+              recipeData={importRequest}
+            />
+          )}
+        </AnimatePresence>
+      </>
     );
   }
 
@@ -128,6 +145,17 @@ const AppRoutes = () => {
             </AnimatePresence>
           </main>
           <FloatingTimer />
+          
+          {/* Recipe Import Modal */}
+          <AnimatePresence>
+            {isImporting && importRequest && (
+              <ImportRecipeModal
+                isOpen={isImporting}
+                onClose={clearImportRequest}
+                recipeData={importRequest}
+              />
+            )}
+          </AnimatePresence>
         </div>
       </MotionConfig>
     </LazyMotion>

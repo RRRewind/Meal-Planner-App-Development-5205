@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { v4 as uuidv4 } from 'uuid';
-import { format, startOfWeek, addDays, isAfter, isSameDay, startOfDay } from 'date-fns';
+import { format, startOfWeek, addDays, isAfter, isSameDay, startOfDay, subWeeks, isBefore } from 'date-fns';
 import { supabase } from '../lib/supabase';
 import { useAuth } from './AuthContext';
 
@@ -47,6 +47,50 @@ export const MealPlanProvider = ({ children }) => {
     }
   };
 
+  // Cleanup old meal plan data
+  const cleanupOldMealPlans = async () => {
+    if (!user) return;
+
+    try {
+      console.log('🧹 Starting cleanup of old meal plan data...');
+      
+      // Calculate cutoff date (start of current week)
+      const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const cutoffDate = format(currentWeekStart, 'yyyy-MM-dd');
+      
+      console.log('🗓️ Cleanup cutoff date:', cutoffDate);
+
+      // Delete old meal plans from Supabase
+      const { data: deletedData, error } = await supabase
+        .from('meal_plans_mp2025')
+        .delete()
+        .eq('user_id', user.id)
+        .lt('date', cutoffDate);
+
+      if (error && error.code !== 'PGRST116') {
+        console.error('❌ Error cleaning up old meal plans:', error);
+        return;
+      }
+
+      // Update local state to remove old entries
+      setMealPlans(prev => {
+        const updated = { ...prev };
+        Object.keys(updated).forEach(dateKey => {
+          if (isBefore(new Date(dateKey), currentWeekStart)) {
+            delete updated[dateKey];
+          }
+        });
+        return updated;
+      });
+
+      console.log('✅ Old meal plan data cleanup completed');
+      console.log('📊 Cleaned up data before:', cutoffDate);
+      
+    } catch (error) {
+      console.error('❌ Error during meal plan cleanup:', error);
+    }
+  };
+
   // Load data when user changes
   useEffect(() => {
     if (user) {
@@ -55,6 +99,25 @@ export const MealPlanProvider = ({ children }) => {
       loadLocalData();
     }
   }, [user]);
+
+  // Run cleanup when user logs in or component mounts
+  useEffect(() => {
+    if (user) {
+      // Run cleanup after a short delay to ensure data is loaded first
+      const cleanupTimer = setTimeout(() => {
+        cleanupOldMealPlans();
+      }, 2000);
+
+      return () => clearTimeout(cleanupTimer);
+    }
+  }, [user]);
+
+  // Run cleanup weekly (every time the week changes)
+  useEffect(() => {
+    if (user) {
+      cleanupOldMealPlans();
+    }
+  }, [currentWeek, user]);
 
   const loadUserData = async () => {
     setLoading(true);
@@ -73,11 +136,15 @@ export const MealPlanProvider = ({ children }) => {
         throw recipesError;
       }
 
-      // Load meal plans
+      // Load meal plans (only current week and future)
+      const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+      const cutoffDate = format(currentWeekStart, 'yyyy-MM-dd');
+
       const { data: mealPlansData, error: mealPlansError } = await supabase
         .from('meal_plans_mp2025')
         .select('*')
-        .eq('user_id', user.id);
+        .eq('user_id', user.id)
+        .gte('date', cutoffDate); // Only load current week and future
 
       if (mealPlansError && mealPlansError.code !== 'PGRST116') {
         console.error('Error loading meal plans:', mealPlansError);
@@ -107,10 +174,12 @@ export const MealPlanProvider = ({ children }) => {
         });
       }
 
-      // Transform recipes data
+      // Transform recipes data with new time fields
       const formattedRecipes = Array.isArray(recipesData) ? recipesData.map(recipe => ({
         ...recipe,
         prepTime: recipe.prep_time || recipe.prepTime || 0,
+        cookTime: recipe.cook_time || recipe.cookTime || 0,
+        chillTime: recipe.chill_time || recipe.chillTime || 0,
         ingredients: Array.isArray(recipe.ingredients) ? recipe.ingredients : [],
         instructions: Array.isArray(recipe.instructions) ? recipe.instructions : []
       })) : [];
@@ -121,6 +190,7 @@ export const MealPlanProvider = ({ children }) => {
       console.log('✅ User data loaded successfully');
       console.log('📊 Loaded recipes:', formattedRecipes.length);
       console.log('📋 Loaded meal plans:', Object.keys(mealPlansMap).length);
+
     } catch (error) {
       console.error('Error loading user data:', error);
       // Fallback to localStorage
@@ -143,12 +213,28 @@ export const MealPlanProvider = ({ children }) => {
 
       if (savedMealPlans) {
         const parsedMealPlans = JSON.parse(savedMealPlans);
-        setMealPlans(typeof parsedMealPlans === 'object' && parsedMealPlans !== null ? parsedMealPlans : {});
+        
+        // Clean up old local data as well
+        const currentWeekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const cleanedMealPlans = {};
+        
+        if (typeof parsedMealPlans === 'object' && parsedMealPlans !== null) {
+          Object.keys(parsedMealPlans).forEach(dateKey => {
+            if (!isBefore(new Date(dateKey), currentWeekStart)) {
+              cleanedMealPlans[dateKey] = parsedMealPlans[dateKey];
+            }
+          });
+        }
+        
+        setMealPlans(cleanedMealPlans);
+        
+        // Save cleaned data back to localStorage
+        safeLocalStorage.setItem('mealPlannerMealPlans', JSON.stringify(cleanedMealPlans));
       } else {
         setMealPlans({});
       }
 
-      console.log('📱 Local data loaded');
+      console.log('📱 Local data loaded and cleaned');
     } catch (error) {
       console.error('Error loading local data:', error);
       setRecipes([]);
@@ -195,6 +281,8 @@ export const MealPlanProvider = ({ children }) => {
             description: newRecipe.description || '',
             category: newRecipe.category || 'Other',
             prep_time: Number(newRecipe.prepTime) || 0,
+            cook_time: Number(newRecipe.cookTime) || 0,
+            chill_time: Number(newRecipe.chillTime) || 0,
             servings: Number(newRecipe.servings) || 1,
             ingredients: newRecipe.ingredients,
             instructions: newRecipe.instructions,
@@ -207,7 +295,9 @@ export const MealPlanProvider = ({ children }) => {
 
         const formattedRecipe = {
           ...data,
-          prepTime: data.prep_time
+          prepTime: data.prep_time,
+          cookTime: data.cook_time,
+          chillTime: data.chill_time
         };
 
         setRecipes(prev => [formattedRecipe, ...prev]);
@@ -240,6 +330,8 @@ export const MealPlanProvider = ({ children }) => {
             description: updatedRecipe.description || '',
             category: updatedRecipe.category || 'Other',
             prep_time: Number(updatedRecipe.prepTime) || 0,
+            cook_time: Number(updatedRecipe.cookTime) || 0,
+            chill_time: Number(updatedRecipe.chillTime) || 0,
             servings: Number(updatedRecipe.servings) || 1,
             ingredients: Array.isArray(updatedRecipe.ingredients) ? updatedRecipe.ingredients : [],
             instructions: Array.isArray(updatedRecipe.instructions) ? updatedRecipe.instructions : []
@@ -312,12 +404,7 @@ export const MealPlanProvider = ({ children }) => {
     }
 
     const dateKey = format(date, 'yyyy-MM-dd');
-    console.log('📅 Adding meal to plan:', {
-      dateKey,
-      mealType,
-      recipeTitle: recipe.title,
-      recipeId: recipe.id
-    });
+    console.log('📅 Adding meal to plan:', { dateKey, mealType, recipeTitle: recipe.title, recipeId: recipe.id });
 
     // Update local state immediately for better UX
     setMealPlans(prev => {
@@ -550,7 +637,8 @@ export const MealPlanProvider = ({ children }) => {
     getTodaysMeals,
     getUpcomingMeals,
     getShoppingList,
-    getWeekMeals
+    getWeekMeals,
+    cleanupOldMealPlans // Expose for manual cleanup if needed
   };
 
   return (
