@@ -1,19 +1,34 @@
 /**
  * WordPress Integration Script for Meal Planner
- * 
- * This script can be embedded in WordPress to enable recipe import functionality.
- * Users can click a button on recipe posts to import recipes into the meal planner app.
+ * Multi-domain support for development and production
  */
-
 (function() {
     'use strict';
 
-    // Configuration
-    const MEAL_PLANNER_DOMAIN = 'https://your-meal-planner-domain.com'; // Update this!
+    // Multi-domain configuration
+    const DOMAINS = {
+        development: 'https://meal-planner-app-development-5205.vercel.app',
+        production: 'https://mealplan.supertasty.recipes'
+    };
+
+    // Auto-detect which domain to use
+    const getMealPlannerDomain = () => {
+        // Check if production domain is accessible (for live site)
+        if (window.location.hostname.includes('supertasty.recipes') || 
+            window.location.hostname.includes('yourdomain.com')) {
+            return DOMAINS.production;
+        }
+        // Default to development for testing
+        return DOMAINS.development;
+    };
+
+    const MEAL_PLANNER_DOMAIN = getMealPlannerDomain();
     const POPUP_FEATURES = 'width=1200,height=800,scrollbars=yes,resizable=yes,location=yes';
 
     // Global reference to meal planner window
     window.mealPlannerWindow = null;
+
+    console.log('🔗 Meal Planner Integration loaded for domain:', MEAL_PLANNER_DOMAIN);
 
     /**
      * Import recipe to meal planner
@@ -39,26 +54,24 @@
                     source: 'wordpress',
                     timestamp: Date.now()
                 }, MEAL_PLANNER_DOMAIN);
-                
+
                 // Focus the existing window
                 window.mealPlannerWindow.focus();
-                
             } else {
                 console.log('🪟 Opening new meal planner window');
                 
                 // Open meal planner in new window
                 const url = `${MEAL_PLANNER_DOMAIN}/#/?import=pending`;
                 window.mealPlannerWindow = window.open(url, 'mealplanner', POPUP_FEATURES);
-                
+
                 if (!window.mealPlannerWindow) {
-                    // Popup was blocked
                     handlePopupBlocked(recipeData);
                     return;
                 }
-                
+
                 // Wait for window to load, then send recipe
                 let attempts = 0;
-                const maxAttempts = 10;
+                const maxAttempts = 15; // Increased for better reliability
                 
                 const sendRecipeWhenReady = () => {
                     attempts++;
@@ -67,7 +80,7 @@
                         console.log('Window was closed before recipe could be sent');
                         return;
                     }
-                    
+
                     try {
                         // Try to send the recipe
                         window.mealPlannerWindow.postMessage({
@@ -78,24 +91,24 @@
                         }, MEAL_PLANNER_DOMAIN);
                         
                         console.log('✅ Recipe sent to meal planner');
-                        
                     } catch (error) {
                         // Window might not be ready yet
                         if (attempts < maxAttempts) {
                             setTimeout(sendRecipeWhenReady, 1000);
                         } else {
                             console.error('Failed to send recipe after maximum attempts');
+                            showImportFeedback('Failed to import recipe. Please try again.', 'error');
                         }
                     }
                 };
-                
+
                 // Start trying to send recipe after initial delay
                 setTimeout(sendRecipeWhenReady, 2000);
             }
-            
+
             // Show user feedback
-            showImportFeedback('Recipe is being imported to your meal planner...');
-            
+            showImportFeedback('Recipe is being imported to your meal planner...', 'info');
+
         } catch (error) {
             console.error('Error importing recipe:', error);
             showImportFeedback('Error importing recipe. Please try again.', 'error');
@@ -104,25 +117,23 @@
 
     /**
      * Handle popup blocked scenario
-     * @param {Object} recipeData - Recipe data to import
      */
     function handlePopupBlocked(recipeData) {
         const message = `
-            Popup was blocked by your browser. 
-            Please allow popups for this site or manually open the meal planner:
-            ${MEAL_PLANNER_DOMAIN}
+Popup was blocked by your browser. 
+
+Please allow popups for this site or manually open the meal planner:
+${MEAL_PLANNER_DOMAIN}
         `;
         
         if (confirm(message + '\n\nWould you like to copy the meal planner URL?')) {
             copyToClipboard(MEAL_PLANNER_DOMAIN);
-            showImportFeedback('Meal planner URL copied to clipboard!');
+            showImportFeedback('Meal planner URL copied to clipboard!', 'success');
         }
     }
 
     /**
      * Show user feedback message
-     * @param {string} message - Message to show
-     * @param {string} type - Message type (success, error, info)
      */
     function showImportFeedback(message, type = 'info') {
         // Remove existing feedback
@@ -163,8 +174,6 @@
 
     /**
      * Get styles for different message types
-     * @param {string} type - Message type
-     * @returns {string} CSS styles
      */
     function getTypeStyles(type) {
         switch (type) {
@@ -179,7 +188,6 @@
 
     /**
      * Copy text to clipboard
-     * @param {string} text - Text to copy
      */
     function copyToClipboard(text) {
         if (navigator.clipboard) {
@@ -195,136 +203,21 @@
         }
     }
 
-    /**
-     * Extract recipe data from WP Recipe Maker structured data
-     * @returns {Object|null} Recipe data or null if not found
-     */
-    window.extractRecipeFromPage = function() {
-        try {
-            // Look for JSON-LD structured data
-            const scripts = document.querySelectorAll('script[type="application/ld+json"]');
-            
-            for (let script of scripts) {
-                try {
-                    const data = JSON.parse(script.textContent);
-                    
-                    // Check if it's a recipe
-                    if (data['@type'] === 'Recipe' || (Array.isArray(data) && data.some(item => item['@type'] === 'Recipe'))) {
-                        const recipe = Array.isArray(data) ? data.find(item => item['@type'] === 'Recipe') : data;
-                        return mapStructuredDataToRecipe(recipe);
-                    }
-                } catch (e) {
-                    console.warn('Failed to parse structured data:', e);
-                }
-            }
-
-            return null;
-        } catch (error) {
-            console.error('Error extracting recipe from page:', error);
-            return null;
-        }
-    };
-
-    /**
-     * Map structured data to recipe format
-     * @param {Object} structuredData - JSON-LD structured data
-     * @returns {Object} Mapped recipe data
-     */
-    function mapStructuredDataToRecipe(structuredData) {
-        // Parse duration strings (PT15M format)
-        const parseDuration = (duration) => {
-            if (!duration) return 0;
-            const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?/);
-            if (!match) return 0;
-            const hours = parseInt(match[1]) || 0;
-            const minutes = parseInt(match[2]) || 0;
-            return hours * 60 + minutes;
-        };
-
-        // Parse ingredients
-        const parseIngredients = (ingredients) => {
-            if (!Array.isArray(ingredients)) return [];
-            
-            return ingredients.map(ingredient => {
-                if (typeof ingredient === 'string') {
-                    return {
-                        name: ingredient,
-                        amount: '1',
-                        unit: 'piece'
-                    };
-                } else {
-                    return {
-                        name: ingredient.name || ingredient.text || 'Unknown ingredient',
-                        amount: ingredient.amount || '1',
-                        unit: ingredient.unit || 'piece'
-                    };
-                }
-            });
-        };
-
-        // Parse instructions
-        const parseInstructions = (instructions) => {
-            if (!Array.isArray(instructions)) return [];
-            
-            return instructions.map(instruction => {
-                if (typeof instruction === 'string') return { text: instruction };
-                return { text: instruction.text || instruction.name || '' };
-            }).filter(inst => inst.text.trim());
-        };
-
-        return {
-            name: structuredData.name || 'Imported Recipe',
-            summary: structuredData.description || '',
-            course: structuredData.recipeCategory || 'Other',
-            prep_time: parseDuration(structuredData.prepTime),
-            cook_time: parseDuration(structuredData.cookTime),
-            total_time: parseDuration(structuredData.totalTime),
-            servings: parseInt(structuredData.recipeYield) || 4,
-            ingredients: parseIngredients(structuredData.recipeIngredient || []),
-            instructions: parseInstructions(structuredData.recipeInstructions || []),
-            url: structuredData.url || window.location.href
-        };
-    }
-
     // Add CSS animations
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideInRight {
-            from {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-            to {
-                transform: translateX(0);
-                opacity: 1;
-            }
+            from { transform: translateX(100%); opacity: 0; }
+            to { transform: translateX(0); opacity: 1; }
         }
         
         @keyframes slideOutRight {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
+            from { transform: translateX(0); opacity: 1; }
+            to { transform: translateX(100%); opacity: 0; }
         }
     `;
     document.head.appendChild(style);
 
-    // Auto-extract recipe when page loads (optional)
-    document.addEventListener('DOMContentLoaded', function() {
-        // Only auto-extract if there's a specific indicator
-        if (document.querySelector('.auto-extract-recipe')) {
-            const recipe = window.extractRecipeFromPage();
-            if (recipe) {
-                console.log('🍽️ Auto-extracted recipe:', recipe.name);
-                window.autoExtractedRecipe = recipe;
-            }
-        }
-    });
-
     console.log('🔗 WordPress Meal Planner Integration loaded');
-
+    console.log('🌐 Target domain:', MEAL_PLANNER_DOMAIN);
 })();
