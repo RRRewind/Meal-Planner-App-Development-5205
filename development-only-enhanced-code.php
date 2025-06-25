@@ -27,8 +27,10 @@ function meal_planner_button_shortcode($atts) {
     // Enhanced recipe data with ingredients and instructions
     $recipe_data = array(
         'id' => $recipe->id(),
-        'name' => $recipe->name(),
+        'title' => $recipe->name(), // ENHANCED: Use 'title' for better compatibility
+        'name' => $recipe->name(),  // Keep both for compatibility
         'prep_time' => $recipe->prep_time(),
+        'prepTime' => $recipe->prep_time(), // ENHANCED: Alternative field name
         'servings' => $recipe->servings(),
         'url' => get_permalink(),
         'ingredients' => array(),
@@ -38,13 +40,18 @@ function meal_planner_button_shortcode($atts) {
     // Safely add more fields
     if (method_exists($recipe, 'summary')) {
         $recipe_data['summary'] = $recipe->summary();
+        $recipe_data['description'] = $recipe->summary(); // ENHANCED: Alternative field
     }
     if (method_exists($recipe, 'course')) {
         $recipe_data['course'] = $recipe->course();
+        $recipe_data['category'] = $recipe->course(); // ENHANCED: Alternative field
     }
     if (method_exists($recipe, 'cook_time')) {
         $recipe_data['cook_time'] = $recipe->cook_time();
+        $recipe_data['cookTime'] = $recipe->cook_time(); // ENHANCED: Alternative field
     }
+    // ENHANCED: Add total time calculation
+    $recipe_data['total_time'] = $recipe_data['prep_time'] + ($recipe_data['cook_time'] ?? 0);
 
     // Safely get ingredients
     try {
@@ -55,9 +62,11 @@ function meal_planner_button_shortcode($atts) {
                     foreach ($ingredient_group['ingredients'] as $ingredient) {
                         $recipe_data['ingredients'][] = array(
                             'name' => isset($ingredient['name']) ? $ingredient['name'] : '',
-                            'quantity' => isset($ingredient['amount']) ? $ingredient['amount'] : '',
-                            'unit' => isset($ingredient['unit']) ? $ingredient['unit'] : '',
-                            'category' => 'Other'
+                            'quantity' => isset($ingredient['amount']) ? floatval($ingredient['amount']) : 1, // ENHANCED: Convert to number
+                            'unit' => isset($ingredient['unit']) ? $ingredient['unit'] : 'piece',
+                            'category' => 'Other',
+                            // ENHANCED: Add notes if available
+                            'notes' => isset($ingredient['notes']) ? $ingredient['notes'] : ''
                         );
                     }
                 }
@@ -85,16 +94,21 @@ function meal_planner_button_shortcode($atts) {
         // If instructions fail, continue without them
     }
     
-    $recipe_json = json_encode($recipe_data);
+    // ENHANCED: Safe JSON encoding with error handling
+    $recipe_json = wp_json_encode($recipe_data);
+    if ($recipe_json === false) {
+        return '<p style="color: red;">Error encoding recipe data.</p>';
+    }
     $recipe_json_safe = esc_attr($recipe_json);
     
     // Get counts for display
     $ingredient_count = count($recipe_data['ingredients']);
     $instruction_count = count($recipe_data['instructions']);
     $prep_time = $recipe_data['prep_time'];
+    $total_time = $recipe_data['total_time']; // ENHANCED: Show total time
     
     // Enhanced button HTML with stats
-    return '<div style="margin: 20px 0; text-align: center; background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%); border: 2px solid #fb923c; border-radius: 16px; padding: 20px;">
+    return '<div style="margin: 20px 0; text-align: center; background: linear-gradient(135deg, #fef7ed 0%, #fed7aa 100%); border: 2px solid #fb923c; border-radius: 16px; padding: 20px; box-shadow: 0 4px 12px rgba(249, 115, 22, 0.1);">
         <!-- Debug info for admins -->
         ' . (current_user_can('administrator') ? '<div style="background: green; color: white; padding: 5px; margin-bottom: 10px; border-radius: 5px; font-size: 12px;">
             ✅ Enhanced Button: ' . esc_html($recipe->name()) . ' (ID: ' . $recipe_id . ') → Development URL
@@ -104,7 +118,7 @@ function meal_planner_button_shortcode($atts) {
             background: linear-gradient(135deg, #f97316 0%, #dc2626 100%);
             color: white;
             border: none;
-            padding: 12px 24px;
+            padding: 14px 28px;
             border-radius: 12px;
             font-weight: 600;
             font-size: 16px;
@@ -123,67 +137,101 @@ function meal_planner_button_shortcode($atts) {
             Add to Meal Planner
         </button>
         
-        <!-- Recipe stats display -->
-        <p style="font-size: 12px; color: #666; margin-top: 8px;">
-            Recipe: <strong>' . esc_html($recipe->name()) . '</strong><br>
-            <span style="font-size: 10px; background: #e7f3ff; padding: 2px 6px; border-radius: 3px; margin-top: 4px; display: inline-block;">
-                📊 ' . $ingredient_count . ' ingredients • ' . $instruction_count . ' steps • ' . $prep_time . 'm prep
-            </span>
-        </p>
+        <!-- ENHANCED: Better recipe stats display -->
+        <div style="margin-top: 12px; padding: 8px; background: rgba(255,255,255,0.7); border-radius: 8px; border: 1px solid rgba(251,146,60,0.2);">
+            <p style="font-size: 14px; color: #333; margin: 0; font-weight: 500;">
+                <strong>' . esc_html($recipe->name()) . '</strong>
+            </p>
+            <div style="display: flex; justify-content: center; gap: 16px; margin-top: 6px; flex-wrap: wrap;">
+                <span style="font-size: 11px; background: #e7f3ff; color: #1e40af; padding: 3px 8px; border-radius: 12px; border: 1px solid #bfdbfe;">
+                    🥄 ' . $ingredient_count . ' ingredients
+                </span>
+                <span style="font-size: 11px; background: #f0fdf4; color: #166534; padding: 3px 8px; border-radius: 12px; border: 1px solid #bbf7d0;">
+                    📝 ' . $instruction_count . ' steps
+                </span>
+                <span style="font-size: 11px; background: #fef3c7; color: #92400e; padding: 3px 8px; border-radius: 12px; border: 1px solid #fed7aa;">
+                    ⏱️ ' . $total_time . 'm total
+                </span>
+            </div>
+        </div>
     </div>';
 }
 
 add_shortcode('meal_planner_button', 'meal_planner_button_shortcode');
 
-// JavaScript with FIXED development URL
+// 🎯 FIXED: JavaScript with FORCED development URL only
 function add_development_meal_planner_script() {
     if (is_single() && has_shortcode(get_post()->post_content, 'meal_planner_button')) {
         ?>
         <script>
-        function developmentMealPlannerImport(recipeJson) {
-            console.log('🍽️ Development import starting...');
+        function developmentMealPlannerImport(recipeJsonString) {
+            console.log('🍽️ DEVELOPMENT-ONLY import starting...');
             
             try {
-                const recipe = JSON.parse(recipeJson);
-                console.log('✅ Recipe data:', recipe);
-                console.log('📊 Recipe has:', {
+                const recipe = JSON.parse(recipeJsonString);
+                console.log('✅ Enhanced recipe data:', recipe);
+                console.log('📊 Recipe statistics:', {
+                    title: recipe.title || recipe.name,
                     ingredients: recipe.ingredients.length,
                     instructions: recipe.instructions.length,
-                    name: recipe.name
+                    prepTime: recipe.prepTime || recipe.prep_time,
+                    cookTime: recipe.cookTime || recipe.cook_time,
+                    totalTime: recipe.total_time
                 });
                 
-                // 🎯 FIXED: Always use development URL
+                // 🎯 FIXED: ALWAYS use development URL until you're ready to switch
                 const developmentUrl = 'https://meal-planner-app-development-5205.vercel.app';
+                
+                console.log('🌐 FORCED development domain:', developmentUrl);
                 
                 // Open meal planner
                 const url = developmentUrl + '/#/?import=pending';
                 const popup = window.open(url, 'mealplanner', 'width=1200,height=800,scrollbars=yes,resizable=yes');
                 
                 if (!popup) {
-                    alert('Please allow popups for this site to use the meal planner integration.');
+                    showDevelopmentFeedback('Please allow popups for this site to use the meal planner integration.', 'error');
                     return;
                 }
                 
-                // Show feedback
-                showDevelopmentFeedback('Opening meal planner (development)...', 'info');
+                // Show immediate feedback
+                showDevelopmentFeedback('Opening development meal planner...', 'info');
                 
-                // Send recipe data after delay
-                setTimeout(function() {
-                    try {
-                        popup.postMessage({
-                            type: 'IMPORT_RECIPE',
-                            recipe: recipe,
-                            source: 'wordpress',
-                            timestamp: Date.now()
-                        }, developmentUrl);
+                // ENHANCED: Multiple send attempts with increasing delays
+                const sendAttempts = [2000, 4000, 6000, 8000];
+                let attemptCount = 0;
+                
+                sendAttempts.forEach((delay, index) => {
+                    setTimeout(function() {
+                        if (popup.closed) {
+                            console.log('Popup closed, stopping attempts');
+                            return;
+                        }
                         
-                        console.log('✅ Recipe sent to development meal planner');
-                        showDevelopmentFeedback('Recipe imported successfully! 🎉', 'success');
-                    } catch (error) {
-                        console.log('Recipe will be available when meal planner loads');
-                        showDevelopmentFeedback('Recipe queued for import...', 'info');
-                    }
-                }, 3000);
+                        attemptCount++;
+                        console.log(`📤 Attempt ${attemptCount}: Sending recipe to DEVELOPMENT...`);
+                        
+                        try {
+                            popup.postMessage({
+                                type: 'IMPORT_RECIPE',
+                                recipe: recipe,
+                                source: 'wordpress',
+                                timestamp: Date.now(),
+                                attempt: attemptCount
+                            }, developmentUrl);
+                            
+                            console.log(`✅ Recipe sent to DEVELOPMENT successfully (attempt ${attemptCount})`);
+                            
+                            if (attemptCount === 1) {
+                                showDevelopmentFeedback('Recipe imported to development! 🎉', 'success');
+                            }
+                        } catch (error) {
+                            console.warn(`⚠️ Development attempt ${attemptCount} failed:`, error);
+                            if (attemptCount === sendAttempts.length) {
+                                showDevelopmentFeedback('Recipe queued for import...', 'info');
+                            }
+                        }
+                    }, delay);
+                });
                 
             } catch (error) {
                 console.error('❌ Development import error:', error);
@@ -191,7 +239,7 @@ function add_development_meal_planner_script() {
             }
         }
         
-        // Enhanced feedback system
+        // ENHANCED: Better feedback system with animations
         function showDevelopmentFeedback(message, type) {
             // Remove existing feedback
             const existing = document.getElementById('development-feedback');
@@ -206,24 +254,39 @@ function add_development_meal_planner_script() {
                 right: 20px;
                 z-index: 10000;
                 padding: 12px 20px;
-                border-radius: 8px;
+                border-radius: 12px;
                 color: white;
                 font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
                 font-size: 14px;
                 font-weight: 500;
-                max-width: 300px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-                ${type === 'success' ? 'background: linear-gradient(135deg, #059669, #10b981);' : 
-                  type === 'error' ? 'background: linear-gradient(135deg, #dc2626, #ef4444);' : 
-                  'background: linear-gradient(135deg, #f97316, #dc2626);'}
+                max-width: 320px;
+                box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+                transform: translateX(100%);
+                transition: transform 0.3s ease-out;
+                ${type === 'success' ? 'background: linear-gradient(135deg, #059669, #10b981); border: 2px solid #34d399;' : 
+                  type === 'error' ? 'background: linear-gradient(135deg, #dc2626, #ef4444); border: 2px solid #f87171;' : 
+                  'background: linear-gradient(135deg, #f97316, #dc2626); border: 2px solid #fb923c;'}
             `;
-            feedback.textContent = message;
+            
+            // Add icon based on type
+            const icon = type === 'success' ? '✅' : type === 'error' ? '❌' : '🍽️';
+            feedback.innerHTML = `<div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 16px;">${icon}</span>
+                <span>${message}</span>
+            </div>`;
+            
             document.body.appendChild(feedback);
             
-            // Auto-remove after 5 seconds
+            // Animate in
+            setTimeout(() => {
+                feedback.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Auto-remove after 5 seconds with animation
             setTimeout(() => {
                 if (feedback.parentNode) {
-                    feedback.remove();
+                    feedback.style.transform = 'translateX(100%)';
+                    setTimeout(() => feedback.remove(), 300);
                 }
             }, 5000);
         }
@@ -234,19 +297,25 @@ function add_development_meal_planner_script() {
 
 add_action('wp_footer', 'add_development_meal_planner_script');
 
-// Debug message for admins
+// ENHANCED: Debug message for admins with more info
 function show_development_debug() {
     if (is_single() && current_user_can('administrator')) {
         $recipe_count = 0;
+        $recipe_ids = array();
+        
         if (class_exists('WPRM_Recipe_Manager')) {
             $recipe_ids = WPRM_Recipe_Manager::get_recipe_ids_from_post(get_the_ID());
             $recipe_count = count($recipe_ids);
         }
         
-        echo '<div style="background: blue; color: white; padding: 10px; position: fixed; top: 10px; right: 10px; z-index: 9999; border-radius: 8px;">
-            🎉 Development Integration Active!<br>
-            Found ' . $recipe_count . ' recipe(s)<br>
-            <small>→ Using development URL</small>
+        echo '<div style="background: linear-gradient(135deg, #3b82f6, #1e40af); color: white; padding: 12px; position: fixed; top: 10px; right: 10px; z-index: 9999; border-radius: 12px; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); max-width: 250px;">
+            <div style="font-weight: bold; margin-bottom: 4px;">🚀 DEVELOPMENT-ONLY Active!</div>
+            <div style="font-size: 12px; opacity: 0.9;">
+                📊 Found ' . $recipe_count . ' recipe(s)<br>
+                🔗 Target: DEVELOPMENT URL ONLY<br>
+                ' . (!empty($recipe_ids) ? '✅ Recipe IDs: ' . implode(', ', $recipe_ids) : '⚠️ No recipes detected') . '<br>
+                <small style="opacity: 0.7;">Will NOT try subdomain until you switch</small>
+            </div>
         </div>';
     }
 }
