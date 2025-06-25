@@ -54,7 +54,7 @@
                     source: 'wordpress',
                     timestamp: Date.now()
                 }, MEAL_PLANNER_DOMAIN);
-
+                
                 // Focus the existing window
                 window.mealPlannerWindow.focus();
             } else {
@@ -72,10 +72,10 @@
                 // Wait for window to load, then send recipe
                 let attempts = 0;
                 const maxAttempts = 15; // Increased for better reliability
-
+                
                 const sendRecipeWhenReady = () => {
                     attempts++;
-
+                    
                     if (window.mealPlannerWindow.closed) {
                         console.log('Window was closed before recipe could be sent');
                         return;
@@ -89,7 +89,7 @@
                             source: 'wordpress',
                             timestamp: Date.now()
                         }, MEAL_PLANNER_DOMAIN);
-
+                        
                         console.log('✅ Recipe sent to meal planner');
                     } catch (error) {
                         // Window might not be ready yet
@@ -108,7 +108,7 @@
 
             // Show user feedback
             showImportFeedback('Recipe is being imported to your meal planner...', 'info');
-
+            
         } catch (error) {
             console.error('Error importing recipe:', error);
             showImportFeedback('Error importing recipe. Please try again.', 'error');
@@ -120,10 +120,11 @@
      */
     function handlePopupBlocked(recipeData) {
         const message = `
-            Popup was blocked by your browser. Please allow popups for this site or manually open the meal planner:
+            Popup was blocked by your browser. 
+            Please allow popups for this site or manually open the meal planner:
             ${MEAL_PLANNER_DOMAIN}
         `;
-
+        
         if (confirm(message + '\n\nWould you like to copy the meal planner URL?')) {
             copyToClipboard(MEAL_PLANNER_DOMAIN);
             showImportFeedback('Meal planner URL copied to clipboard!', 'success');
@@ -157,7 +158,7 @@
             animation: slideInRight 0.3s ease-out;
             ${getTypeStyles(type)}
         `;
-
+        
         feedback.textContent = message;
         document.body.appendChild(feedback);
 
@@ -205,18 +206,29 @@
     const style = document.createElement('style');
     style.textContent = `
         @keyframes slideInRight {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
         }
         
         @keyframes slideOutRight {
-            from { transform: translateX(0); opacity: 1; }
-            to { transform: translateX(100%); opacity: 0; }
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+            to {
+                transform: translateX(100%);
+                opacity: 0;
+            }
         }
     `;
     document.head.appendChild(style);
 
     console.log('🔗 WordPress Meal Planner Integration loaded');
     console.log('🌐 Target domain:', MEAL_PLANNER_DOMAIN);
-
 })();
